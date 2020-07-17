@@ -1,0 +1,352 @@
+---
+title: "HW1"
+author: "Siming Yan"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  rmdformats::material:
+    self_contained: no
+    thumbnails: yes
+    lightbox: yes
+    gallery: no
+    highlight: tango
+---
+
+<html>
+<style> 
+div.bgm { background-color:#e6fff0; border-radius: 7px; padding: 10px;} 
+.ans {
+  color: purple;
+  font-weight: bold;
+}
+#main { 
+    color: #ff751a; 
+}
+</style>
+
+<div class = "bgm">
+
+<ul id="main">
+
+
+```{r setup, echo=FALSE, cache=FALSE, include = F}
+library(knitr)
+library(rmdformats)
+# library(xaringanthemer)
+## Global options
+options(max.print="75")
+knitr::opts_chunk$set(
+	fig.width = 7,
+	message = FALSE,
+	warning = FALSE,
+	cache = TRUE,
+	comment = NA,
+	dpi = 300,
+	prompt = FALSE,
+	tidy = TRUE
+)
+opts_knit$set(width=75)
+# knitr::opts_chunk$set()
+options(digits=5)
+options(scipen=5)
+knitr::opts_chunk$set(warning = F, message=F)
+
+
+```
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+# library(xaringanthemer)
+# style_duo_accent_inverse(primary_color = "#035AA6", secondary_color = "#03A696")
+```
+
+```{r setup2, include=FALSE}
+library(knitr)
+library(dplyr)
+library(tidyr)
+library(stargazer)
+library(tidyverse)
+library(formatR)
+library(data.table)
+# library(lmtest) #for coeftest() and bptest().
+# library(broom) #for glance() and tidy()
+# library(RCurl)# For the robust SE method 1
+# library(sandwich)
+library(mice) #check NA
+# library(MatchIt)
+library(ggthemes)
+library(RColorBrewer)
+library(kableExtra)
+library(MASS)
+library(ISLR)
+library(leaps)
+```
+
+
+
+```{r functions, warning=F, message=F, include = F}
+kbt <- function(...){
+  knitr::kable(..., format.args = list(big.mark = ',', scientific = F)) %>%
+    kableExtra::kable_styling(c("striped", "hover", "condensed"),
+                               full_width = F,
+                               position = "center",
+                               row_label_position = "c") %>%
+   row_spec(0, bold = T, color = "white", background = "#004d1f")
+}
+
+gpt <- function(...){
+  ggplot2::ggplot(...) + 
+    theme_minimal() +
+    theme(plot.title = element_text(face = "bold", size = 14, hjust = 0.5),
+      plot.subtitle = element_text(face = "italic", size = 12, hjust = 0.5), 
+      axis.text.x = element_text(angle = 0, hjust = 0.5))
+}
+
+stg <- function(...){
+  stargazer::stargazer(..., 
+          type = "text",
+          # style = "qje",
+          # title = "daily_kwh ~ post:encouraged|customer_id + no.bill|0|customer_id",
+          keep.stat = c("n", "ser"),
+          digits = 5)
+}
+```
+
+
+
+### Q1. 
+We have 2 opaque bags, each containing 2 balls. One bag has 2 black balls and the other has a black ball and a white ball. You pick a bag at random and then pick one of the balls in that bag at random. When you look at the ball, it is black. You now pick the second ball from that same bag. What is the probability that this ball is also black? (Remember to apply Bayes rule to answer the question:)
+
+$$
+\begin{eqnarray*}\\
+P(A|B) &&= \frac {P(B|A)\cdot P(A)}{P(B)}
+\end{eqnarray*}
+$$
+
+```{r, include = F}
+(1/2)/(3/4)
+```
+
+<span style="font-size:17px;color:#8B30BB;">
+Assume the incident of first time **pick the 2 black ball bag** is A.
+$P(A) = 1/2$, <br />
+assume **pick a ball and it is black** as incident B. $P(B) = 3/4$ <br />
+We can infer that when we already picked the 2 black ball bag, <br />
+the probability of 2nd ball is black is $P(B|A) = 1$.<br />
+From the Bayes rule:
+$$
+\begin{eqnarray*}\\
+P(A|B) &&= \frac {P(B|A)\cdot P(A)}{P(B)} \\&&
+= \frac{1\times 0.5}{0.75}= 0.66667
+\end{eqnarray*}
+$$
+</span>
+
+---
+
+<!-- #-------------------------------------------- -->
+
+### Q2. 
+For each of the following tasks, identify which type of learning is involved (supervised, reinforcement, or unsupervised). Notice that some of them can fit more than one type.<br />
+
+(1) Recommending a book to a user in an online bookstore.<br />
+***<span style="font-size:17px;color:#8B30BB;">Unsupervised Learning</span><br />***
+
+(2) Playing “Go” game. <br />
+***<span style="font-size:17px;color:#8B30BB;">Supervised Learning & Reinforced Learning</span><br />***
+
+(3) Categorizing movies into different types<br />
+***<span style="font-size:17px;color:#8B30BB;">Supervised Learning</span><br />***
+
+(4) Learning to play music<br />
+***<span style="font-size:17px;color:#8B30BB;">Unsupervised Learning</span><br />***
+
+(5) Deciding the maximum allowed debt for each bank customer(credit limit)<br />
+***<span style="font-size:17px;color:#8B30BB;">Supervised Learning</span><br />***
+
+
+---
+
+<!-- #-------------------------------------------- -->
+
+### Q3. 
+
+(1)  What is the expected test MSE (mean squared error) for a test sample point of (x0,y0), or so-called expected prediction error (EPE)? Use f(x) for the prediction function. What does it measure?
+
+***<span style="font-size:17px;color:#8B30BB;">
+$$
+\begin{eqnarray*}\\&&
+Expected\ Test\ MSE = E[(Y_0 - \hat f(X_0))^2]
+\tag{3-1.}
+\end{eqnarray*}
+$$
+<br />
+The average squared prediction error for these test observations $(X_0,Y_0)$</span>
+<br />***
+
+
+(2)  The expected test MSE (or EPE) in (1) can be decomposed into three quantities: the variance of the prediction, the squared bias of the prediction and the variance of the error term (e). Write down the formula and explain the meanings of individual elements.
+
+***<span style="font-size:17px;color:#8B30BB;">
+$$
+\begin{eqnarray*}\\
+Expected\ Test\ MSE &&= E[(Y_0 - \hat f(X_0))^2]\\&&
+ =  Var(\hat f(X_0))+[Bias( \hat f(X_0))]^2+Var(\epsilon)
+\tag{3-2.}
+\end{eqnarray*}
+$$
+<br />
+The variance of $\hat f(X_0)$, the squared bias of $\hat f(X_0)$ and the variance of the irreducible error term $\epsilon$. </span><br />***
+
+(3)  The figure below on the left illustrates the curves of expected MSE, squared bias, variance, and irreducible error curves as we go from less flexible to more flexible machine learning methods. Label each curve and explain why each curve has the displayed shape.
+
+![AAE722-1-3-3.](https://raw.githubusercontent.com/fyenne/picgallery/master/c1.png)
+
+***<span style="font-size:17px;color:#8B30BB;">Expected MSE(Red Curve), as $$Expected\ MSE = Var(\hat f(X_0))+[Bias( \hat f(X_0))]^2+Var(\epsilon)$$ it takes the largest value among these four curves. There exists bias-Variance trade-off, so the curve takes form of "likely" Quadratic. Generally, as flexibility increases we see an increase in variance and a decrease in bias. Our aim is to minimise the expected test MSE, that is we must choose a statistical machine learning model that simultaneously has low variance and low bias.<br /><br />
+Squared bias(Blue curve), which characterises the difference between the averages of the estimate and the true values. Since the complexity of the model can reduce the amount of those values not fitted in the curve. As flexibility of the model function increases, we see an increase in variance and a decrease in bias. 
+<br /><br />
+Variance(Orange curve), It determines how much the average model estimation deviates as different training data is tried. In particular, a model with high variance is suggestive that it is overfitted to the training data. As flexibility of the model function increases, we see an increase in variance and a decrease in bias. <br /><br />
+Irreducible error(dash line), is fixed minimum lower bound for the test MSE. Since we only ever have access to the training data points (including the randomness associated with the $\epsilon$ values) we can't ever hope to get a "more accurate" fit than what the variance of the residuals offer.</span><br />***
+
+(4)  The figure below on the right plots the training error, testing error and the irreducible error curves. Label each one and explain why each curve has the shape displayed in the figure.
+
+![AAE722-1-3-4.](https://raw.githubusercontent.com/fyenne/picgallery/master/c2.png)
+
+***<span style="font-size:17px;color:#8B30BB;">Training MSE (grey curve), as the flexibility of the statistical learning method increases, we observe a monotone decrease in the training MSE. Since the complexity of the model can reduce the amount of those values has not fitted in the curve. According to $MSE = \frac{1}{n} \sum (y_i - \hat f(x_i))^2$, with larger n, little difference between $y_i - \hat f(x_i)$, the value of MSE decrease monotonically. <br /><br /><br />
+Test MSE (red curve), has the lowest value when optimized, As $Test\ MSE = Var(\hat f(X_0))+[Bias( \hat f(X_0))]^2+Var(\epsilon)$, There exists bias-Variance trade-off, so the curve takes form of "likely" Quadratic with a minimum value. Generally, as flexibility increases we see an increase in variance and a decrease in bias.<br /><br /><br />
+Irreducible error(dash line), is fixed minimum lower bound for the test MSE. Since we only ever have access to the training data points (including the randomness associated with the $\epsilon$ values) we can't ever hope to get a "more accurate" fit than what the variance of the residuals offer.
+</span><br />***
+
+
+ 
+---
+
+<!-- #-------------------------------------------- -->
+
+
+### Q4.
+Suppose we consider to predict yi = μ + εi using$\hat u = α\overline y$, where$\overline y$ is the sample mean, $\epsilon$ has mean 0 variance $\sigma^2$ .
+
+1. Derive the optimal α∗ for minimizing the quadratic loss of prediction, 
+$$
+E(l(α\overline y, y)) = E[(y-α\overline y)^2]
+$$
+using the bias-variance decomposition formula.
+
+***<span style="font-size:17px;color:#8B30BB;">
+$$\begin{eqnarray*}\\
+E(l(α\overline y, y)) &&= E[(y-α\overline y)^2] \\&&
+= Var(\alpha \overline y)+[E(\alpha \overline y - y)]^2 + \sigma^2_\epsilon\\&&
+= \frac{1}{n}\alpha^2 \sigma^2_\epsilon + [(1-\alpha)\overline y]^2 +\sigma^2_\epsilon
+\tag{4.1}
+\end{eqnarray*}$$
+Minimized by $\alpha$ = 1.</span><br />***
+
+2. Is $α\overline y$ derived in (1) a biased estimator of μ? Why?<br />
+
+***<span style="font-size:17px;color:#8B30BB;">No, as function was minimized, the $\alpha$ takes value of 1, $E(α\overline y) = μ$, hence it is not biased</span><br />***
+
+---
+<!-- #-------------------------------------------- -->
+
+### Q5.
+use the dataset of house values:
+
+##### (1) Figure out the numbers of rows with NA value and remove them from the data. Report the dimensions of the data before and after the cleaning.
+
+```{r}
+df <- read.csv("./homes2004.csv")
+dim(df)
+# library(mice)
+# md.pattern(df)
+which(is.na(df)==T)
+df <- na.omit(df)
+dim(df)
+```
+
+##### (2) Report the frequency of educational level of the sample householders.
+
+```{r}
+df2 <- df %>% group_by(HHGRAD) %>% summarise(n()) %>% as.data.frame()
+df2$sum <- sum(df2$`n()`)
+df2$freq <- df2$`n()`/df2$sum
+df2 %>% kbt
+```
+
+
+##### (3) Count the states in the data and report the number.
+
+```{r}
+df %>% group_by(STATE) %>% summarise(n()) %>% transpose() %>% kbt
+```
+
+
+##### (4) Report the mean, max, min of the BATHS and VALUE variables.
+
+```{r}
+summary(df$BATHS)[c(1,4,6)] #bathroom
+summary(df$VALUE)[c(1,4,6)] #value
+```
+
+
+##### (5) Generate a dummy variable indicating the number of bedrooms is greater than 2. Report the frequency table of the generated variable.
+
+```{r}
+df <- mutate(df, two_plus_rooms = ifelse(df$BEDRMS > 2, "T", "F"))
+
+xtabs(~df$two_plus_rooms) %>% as.data.frame() %>% kbt
+
+```
+
+##### (6) Report the average current market value and the average purchase price by the numbers of full bedrooms in unit.
+
+```{r}
+df3 <- df %>% group_by(BEDRMS) %>% summarise(mv = mean(VALUE), pp = mean(LPRICE))
+df3  %>% kbt
+```
+
+
+##### (7) Generate the scatter plots of the numbers of full bedrooms and the average current market value.
+
+```{r}
+gpt(df3) +
+  aes(x = BEDRMS, y = mv) +
+  geom_point() +
+  scale_x_continuous(breaks = df3$BEDRMS) +
+  labs(title  = "numbers of full bedrooms and the average current market value",
+       x = "# of bedrooms",
+       y = "average current market value")
+```
+
+
+##### (8) Run a linear regression with at least 3 explanatory variables to explore the effects of housing characteristics on the current market value of the unit. Report the output and analyze your results, for example, by describing the partial effect like “1 more bedroom increases the home value by $xx with other factors fixed.”
+
+```{r}
+# df$LPRICE
+fit <- lm(VALUE ~ PER + BATHS + BEDRMS, df)
+fit %>% stg
+
+# predict(fit, 
+#         data.frame(PER = c(2), BATHS = c(1, 3, 5), BEDRMS = c(2)),
+#         interval = "prediction")
+```
+
+***<span style="font-size:17px;color:#8B30BB;">1 more person increases the home value by -\$3470.3 with other factors fixed;<br /> 1 more Bathroom increases the home value by \$98296.9 with other factors fixed;<br />1 more bedroom increases the home value by \$30013.8  with other factors fixed.
+</span><br />***
+
+
+<!-- ***<span style="font-size:17px;color:#8B30BB;">When holding person of household fixed at 2, number of bedrooms fixed at 2, when the number of bathroom is 1, the predicted house value is 97780; When the number of bathroom is 3, the predicted house value is 294374; When the number of bathroom is 5, the predicted house value is 490968; </span><br />*** -->
+
+##### (9) Report and analyze the diagnostic plots of the model you specified in (8).
+
+```{r}
+plot(fit)
+```
+***<span style="font-size:17px;color:#8B30BB;">
+1) Res-Fitted: It shows our residuals have non-linear patterns. We find equally spread residuals around a horizontal line without distinct patterns, that is a good indication that we don’t have non-linear relationships. Non-linear relationship was explained by the model and was left out in the residuals.<br /><br />
+2) Q-Q: It shows if residuals are normally distributed. We almost have a straight line in the begainning, but when quantiles hit the value of 2, the value of standardized residuals surge. Which indicate that we can not rely on the prediction when bathrooms number is large.<br /><br />
+3) Scale-Location: It shows we have residuals are equally distributed along the ranges of predictors. homoskedasticity. <br /><br />
+4) Residuals-Leverage: It identifies influential data points on your model. Our model is the typical look when there is no influential case, or cases. We can barely see Cook’s distance lines (a red dashed line) because all cases are well inside of the Cook’s distance lines.
+</span><br />***
+
+
+
+<br />

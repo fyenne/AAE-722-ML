@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="author" content="Siming Yan" />
+
+
+<title>HW1</title>
+<!-- Material Design fonts -->
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700">
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<script src="hw1_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="hw1_files/bootstrap-3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+<script src="hw1_files/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<script src="hw1_files/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="hw1_files/navigation-1.1/tabsets.js"></script>
+<script src="hw1_files/navigation-1.1/codefolding.js"></script>
+<link href="hw1_files/magnific-popup-1.1.0/magnific-popup.css" rel="stylesheet" />
+<script src="hw1_files/magnific-popup-1.1.0/jquery.magnific-popup.min.js"></script>
+<link href="hw1_files/bootstrap_material-0.1/bootstrap-material-design.min.css" rel="stylesheet" />
+<link href="hw1_files/bootstrap_material-0.1/ripples.min.css" rel="stylesheet" />
+<script src="hw1_files/bootstrap_material-0.1/material.min.js"></script>
+<script src="hw1_files/bootstrap_material-0.1/ripples.min.js"></script>
+<link href="hw1_files/material-0.1/material.css" rel="stylesheet" />
+<script src="hw1_files/material-0.1/material.js"></script>
+<script src="hw1_files/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<script src="hw1_files/kePrint-0.0.1/kePrint.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  background-color: #f8f8f8; }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ef2929; } /* Alert */
+code span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #c4a000; } /* Attribute */
+code span.bn { color: #0000cf; } /* BaseN */
+code span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4e9a06; } /* Char */
+code span.cn { color: #000000; } /* Constant */
+code span.co { color: #8f5902; font-style: italic; } /* Comment */
+code span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code span.dt { color: #204a87; } /* DataType */
+code span.dv { color: #0000cf; } /* DecVal */
+code span.er { color: #a40000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #0000cf; } /* Float */
+code span.fu { color: #000000; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code span.ot { color: #8f5902; } /* Other */
+code span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code span.sc { color: #000000; } /* SpecialChar */
+code span.ss { color: #4e9a06; } /* SpecialString */
+code span.st { color: #4e9a06; } /* String */
+code span.va { color: #000000; } /* Variable */
+code span.vs { color: #4e9a06; } /* VerbatimString */
+code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("toc");
+});
+</script>
+
+<!-- code folding -->
+
+</head>
+
+<body>
+
+<div class="header-panel shadow z-2">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-3">
+        <div id="header">
+    <h1 class="title">HW1</h1>
+                <h4 class="author">Siming Yan</h4>
+                <h4 class="date">16 July, 2020</h4>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+
+
+<div class="container-fluid main-container">
+    <div class="row">
+      <nav class="col-xs-3 menu">
+        <div id="toc">
+        
+        </div>
+        
+        
+        
+      </nav>
+     <div class="pages col-xs-9">
+     <div class="row">
+       <div class="col-xs-10">
+
+
+
+<html>
+<style> 
+div.bgm { background-color:#e6fff0; border-radius: 7px; padding: 10px;} 
+.ans {
+  color: purple;
+  font-weight: bold;
+}
+#main { 
+    color: #ff751a; 
+}
+</style>
+<div class = "bgm">
+
+<ul id="main">
+<div id="q1." class="section level3">
+<h3>Q1.</h3>
+<p>We have 2 opaque bags, each containing 2 balls. One bag has 2 black balls and the other has a black ball and a white ball. You pick a bag at random and then pick one of the balls in that bag at random. When you look at the ball, it is black. You now pick the second ball from that same bag. What is the probability that this ball is also black? (Remember to apply Bayes rule to answer the question:)</p>
+<p><span class="math display">\[
+\begin{eqnarray*}\\
+P(A|B) &amp;&amp;= \frac {P(B|A)\cdot P(A)}{P(B)}
+\end{eqnarray*}
+\]</span></p>
+<p><span style="font-size:17px;color:#8B30BB;"> Assume the incident of first time <strong>pick the 2 black ball bag</strong> is A. <span class="math inline">\(P(A) = 1/2\)</span>, <br /> assume <strong>pick a ball and it is black</strong> as incident B. <span class="math inline">\(P(B) = 3/4\)</span> <br /> We can infer that when we already picked the 2 black ball bag, <br /> the probability of 2nd ball is black is <span class="math inline">\(P(B|A) = 1\)</span>.<br /> From the Bayes rule: <span class="math display">\[
+\begin{eqnarray*}\\
+P(A|B) &amp;&amp;= \frac {P(B|A)\cdot P(A)}{P(B)} \\&amp;&amp;
+= \frac{1\times 0.5}{0.75}= 0.66667
+\end{eqnarray*}
+\]</span> </span></p>
+<hr />
+<!-- #-------------------------------------------- -->
+</div>
+<div id="q2." class="section level3">
+<h3>Q2.</h3>
+<p>For each of the following tasks, identify which type of learning is involved (supervised, reinforcement, or unsupervised). Notice that some of them can fit more than one type.<br /></p>
+<ol style="list-style-type: decimal">
+<li><p>Recommending a book to a user in an online bookstore.<br /> <strong><em><span style="font-size:17px;color:#8B30BB;">Unsupervised Learning</span><br /></em></strong></p></li>
+<li><p>Playing “Go” game. <br /> <strong><em><span style="font-size:17px;color:#8B30BB;">Supervised Learning &amp; Reinforced Learning</span><br /></em></strong></p></li>
+<li><p>Categorizing movies into different types<br /> <strong><em><span style="font-size:17px;color:#8B30BB;">Supervised Learning</span><br /></em></strong></p></li>
+<li><p>Learning to play music<br /> <strong><em><span style="font-size:17px;color:#8B30BB;">Unsupervised Learning</span><br /></em></strong></p></li>
+<li><p>Deciding the maximum allowed debt for each bank customer(credit limit)<br /> <strong><em><span style="font-size:17px;color:#8B30BB;">Supervised Learning</span><br /></em></strong></p></li>
+</ol>
+<hr />
+<!-- #-------------------------------------------- -->
+</div>
+<div id="q3." class="section level3">
+<h3>Q3.</h3>
+<ol style="list-style-type: decimal">
+<li>What is the expected test MSE (mean squared error) for a test sample point of (x0,y0), or so-called expected prediction error (EPE)? Use f(x) for the prediction function. What does it measure?</li>
+</ol>
+<p><strong><em><span style="font-size:17px;color:#8B30BB;"> <span class="math display">\[
+\begin{eqnarray*}\\&amp;&amp;
+Expected\ Test\ MSE = E[(Y_0 - \hat f(X_0))^2]
+\tag{3-1.}
+\end{eqnarray*}
+\]</span> <br /> The average squared prediction error for these test observations <span class="math inline">\((X_0,Y_0)\)</span></span> <br /></em></strong></p>
+<ol start="2" style="list-style-type: decimal">
+<li>The expected test MSE (or EPE) in (1) can be decomposed into three quantities: the variance of the prediction, the squared bias of the prediction and the variance of the error term (e). Write down the formula and explain the meanings of individual elements.</li>
+</ol>
+<p><strong><em><span style="font-size:17px;color:#8B30BB;"> <span class="math display">\[
+\begin{eqnarray*}\\
+Expected\ Test\ MSE &amp;&amp;= E[(Y_0 - \hat f(X_0))^2]\\&amp;&amp;
+ =  Var(\hat f(X_0))+[Bias( \hat f(X_0))]^2+Var(\epsilon)
+\tag{3-2.}
+\end{eqnarray*}
+\]</span> <br /> The variance of <span class="math inline">\(\hat f(X_0)\)</span>, the squared bias of <span class="math inline">\(\hat f(X_0)\)</span> and the variance of the irreducible error term <span class="math inline">\(\epsilon\)</span>. </span><br /></em></strong></p>
+<ol start="3" style="list-style-type: decimal">
+<li>The figure below on the left illustrates the curves of expected MSE, squared bias, variance, and irreducible error curves as we go from less flexible to more flexible machine learning methods. Label each curve and explain why each curve has the displayed shape.</li>
+</ol>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/fyenne/picgallery/master/c1.png" alt="" />
+<p class="caption">AAE722-1-3-3.</p>
+</div>
+<p><strong><em><span style="font-size:17px;color:#8B30BB;">Expected MSE(Red Curve), as <span class="math display">\[Expected\ MSE = Var(\hat f(X_0))+[Bias( \hat f(X_0))]^2+Var(\epsilon)\]</span> it takes the largest value among these four curves. There exists bias-Variance trade-off, so the curve takes form of “likely” Quadratic. Generally, as flexibility increases we see an increase in variance and a decrease in bias. Our aim is to minimise the expected test MSE, that is we must choose a statistical machine learning model that simultaneously has low variance and low bias.<br /><br /> Squared bias(Blue curve), which characterises the difference between the averages of the estimate and the true values. Since the complexity of the model can reduce the amount of those values not fitted in the curve. As flexibility of the model function increases, we see an increase in variance and a decrease in bias. <br /><br /> Variance(Orange curve), It determines how much the average model estimation deviates as different training data is tried. In particular, a model with high variance is suggestive that it is overfitted to the training data. As flexibility of the model function increases, we see an increase in variance and a decrease in bias. <br /><br /> Irreducible error(dash line), is fixed minimum lower bound for the test MSE. Since we only ever have access to the training data points (including the randomness associated with the <span class="math inline">\(\epsilon\)</span> values) we can’t ever hope to get a “more accurate” fit than what the variance of the residuals offer.</span><br /></em></strong></p>
+<ol start="4" style="list-style-type: decimal">
+<li>The figure below on the right plots the training error, testing error and the irreducible error curves. Label each one and explain why each curve has the shape displayed in the figure.</li>
+</ol>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/fyenne/picgallery/master/c2.png" alt="" />
+<p class="caption">AAE722-1-3-4.</p>
+</div>
+<p><strong><em><span style="font-size:17px;color:#8B30BB;">Training MSE (grey curve), as the flexibility of the statistical learning method increases, we observe a monotone decrease in the training MSE. Since the complexity of the model can reduce the amount of those values has not fitted in the curve. According to <span class="math inline">\(MSE = \frac{1}{n} \sum (y_i - \hat f(x_i))^2\)</span>, with larger n, little difference between <span class="math inline">\(y_i - \hat f(x_i)\)</span>, the value of MSE decrease monotonically. <br /><br /><br /> Test MSE (red curve), has the lowest value when optimized, As <span class="math inline">\(Test\ MSE = Var(\hat f(X_0))+[Bias( \hat f(X_0))]^2+Var(\epsilon)\)</span>, There exists bias-Variance trade-off, so the curve takes form of “likely” Quadratic with a minimum value. Generally, as flexibility increases we see an increase in variance and a decrease in bias.<br /><br /><br /> Irreducible error(dash line), is fixed minimum lower bound for the test MSE. Since we only ever have access to the training data points (including the randomness associated with the <span class="math inline">\(\epsilon\)</span> values) we can’t ever hope to get a “more accurate” fit than what the variance of the residuals offer. </span><br /></em></strong></p>
+<hr />
+<!-- #-------------------------------------------- -->
+</div>
+<div id="q4." class="section level3">
+<h3>Q4.</h3>
+<p>Suppose we consider to predict yi = μ + εi using<span class="math inline">\(\hat u = α\overline y\)</span>, where<span class="math inline">\(\overline y\)</span> is the sample mean, <span class="math inline">\(\epsilon\)</span> has mean 0 variance <span class="math inline">\(\sigma^2\)</span> .</p>
+<ol style="list-style-type: decimal">
+<li>Derive the optimal α∗ for minimizing the quadratic loss of prediction, <span class="math display">\[
+E(l(α\overline y, y)) = E[(y-α\overline y)^2]
+\]</span> using the bias-variance decomposition formula.</li>
+</ol>
+<p><strong><em><span style="font-size:17px;color:#8B30BB;"> <span class="math display">\[\begin{eqnarray*}\\
+E(l(α\overline y, y)) &amp;&amp;= E[(y-α\overline y)^2] \\&amp;&amp;
+= Var(\alpha \overline y)+[E(\alpha \overline y - y)]^2 + \sigma^2_\epsilon\\&amp;&amp;
+= \frac{1}{n}\alpha^2 \sigma^2_\epsilon + [(1-\alpha)\overline y]^2 +\sigma^2_\epsilon
+\tag{4.1}
+\end{eqnarray*}\]</span> Minimized by <span class="math inline">\(\alpha\)</span> = 1.</span><br /></em></strong></p>
+<ol start="2" style="list-style-type: decimal">
+<li>Is <span class="math inline">\(α\overline y\)</span> derived in (1) a biased estimator of μ? Why?<br /></li>
+</ol>
+<p><strong><em><span style="font-size:17px;color:#8B30BB;">No, as function was minimized, the <span class="math inline">\(\alpha\)</span> takes value of 1, <span class="math inline">\(E(α\overline y) = μ\)</span>, hence it is not biased</span><br /></em></strong></p>
+<hr />
+<!-- #-------------------------------------------- -->
+</div>
+<div id="q5." class="section level3">
+<h3>Q5.</h3>
+<p>use the dataset of house values:</p>
+<div id="figure-out-the-numbers-of-rows-with-na-value-and-remove-them-from-the-data.-report-the-dimensions-of-the-data-before-and-after-the-cleaning." class="section level5">
+<h5>(1) Figure out the numbers of rows with NA value and remove them from the data. Report the dimensions of the data before and after the cleaning.</h5>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;./homes2004.csv&quot;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">dim</span>(df)</span></code></pre></div>
+<pre><code>[1] 15565    29</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># library(mice) md.pattern(df)</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">which</span>(<span class="kw">is.na</span>(df) <span class="op">==</span><span class="st"> </span>T)</span></code></pre></div>
+<pre><code>integer(0)</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>df &lt;-<span class="st"> </span><span class="kw">na.omit</span>(df)</span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">dim</span>(df)</span></code></pre></div>
+<pre><code>[1] 15565    29</code></pre>
+</div>
+<div id="report-the-frequency-of-educational-level-of-the-sample-householders." class="section level5">
+<h5>(2) Report the frequency of educational level of the sample householders.</h5>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>df2 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">group_by</span>(HHGRAD) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">summarise</span>(<span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.data.frame</span>()</span>
+<span id="cb7-2"><a href="#cb7-2"></a>df2<span class="op">$</span>sum &lt;-<span class="st"> </span><span class="kw">sum</span>(df2<span class="op">$</span><span class="st">`</span><span class="dt">n()</span><span class="st">`</span>)</span>
+<span id="cb7-3"><a href="#cb7-3"></a>df2<span class="op">$</span>freq &lt;-<span class="st"> </span>df2<span class="op">$</span><span class="st">`</span><span class="dt">n()</span><span class="st">`</span><span class="op">/</span>df2<span class="op">$</span>sum</span>
+<span id="cb7-4"><a href="#cb7-4"></a>df2 <span class="op">%&gt;%</span><span class="st"> </span>kbt</span></code></pre></div>
+<table class="table table-striped table-hover table-condensed" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+HHGRAD
+</th>
+<th style="text-align:right;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+n()
+</th>
+<th style="text-align:right;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+sum
+</th>
+<th style="text-align:right;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+freq
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Assoc
+</td>
+<td style="text-align:right;">
+1,867
+</td>
+<td style="text-align:right;">
+15,565
+</td>
+<td style="text-align:right;">
+0.11995
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Bach
+</td>
+<td style="text-align:right;">
+4,246
+</td>
+<td style="text-align:right;">
+15,565
+</td>
+<td style="text-align:right;">
+0.27279
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Grad
+</td>
+<td style="text-align:right;">
+2,368
+</td>
+<td style="text-align:right;">
+15,565
+</td>
+<td style="text-align:right;">
+0.15214
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HS Grad
+</td>
+<td style="text-align:right;">
+6,026
+</td>
+<td style="text-align:right;">
+15,565
+</td>
+<td style="text-align:right;">
+0.38715
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+No HS
+</td>
+<td style="text-align:right;">
+1,058
+</td>
+<td style="text-align:right;">
+15,565
+</td>
+<td style="text-align:right;">
+0.06797
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="count-the-states-in-the-data-and-report-the-number." class="section level5">
+<h5>(3) Count the states in the data and report the number.</h5>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">group_by</span>(STATE) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">summarise</span>(<span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">transpose</span>() <span class="op">%&gt;%</span><span class="st"> </span>kbt</span></code></pre></div>
+<table class="table table-striped table-hover table-condensed" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+V1
+</th>
+<th style="text-align:left;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+V2
+</th>
+<th style="text-align:left;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+V3
+</th>
+<th style="text-align:left;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+V4
+</th>
+<th style="text-align:left;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+V5
+</th>
+<th style="text-align:left;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+V6
+</th>
+<th style="text-align:left;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+V7
+</th>
+<th style="text-align:left;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+V8
+</th>
+<th style="text-align:left;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+V9
+</th>
+<th style="text-align:left;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+V10
+</th>
+<th style="text-align:left;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+V11
+</th>
+<th style="text-align:left;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+V12
+</th>
+<th style="text-align:left;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+V13
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+CA
+</td>
+<td style="text-align:left;">
+CO
+</td>
+<td style="text-align:left;">
+CT
+</td>
+<td style="text-align:left;">
+GA
+</td>
+<td style="text-align:left;">
+IL
+</td>
+<td style="text-align:left;">
+IN
+</td>
+<td style="text-align:left;">
+LA
+</td>
+<td style="text-align:left;">
+MO
+</td>
+<td style="text-align:left;">
+OH
+</td>
+<td style="text-align:left;">
+OK
+</td>
+<td style="text-align:left;">
+PA
+</td>
+<td style="text-align:left;">
+TX
+</td>
+<td style="text-align:left;">
+WA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1426
+</td>
+<td style="text-align:left;">
+1807
+</td>
+<td style="text-align:left;">
+1422
+</td>
+<td style="text-align:left;">
+1457
+</td>
+<td style="text-align:left;">
+237
+</td>
+<td style="text-align:left;">
+1492
+</td>
+<td style="text-align:left;">
+779
+</td>
+<td style="text-align:left;">
+1047
+</td>
+<td style="text-align:left;">
+1189
+</td>
+<td style="text-align:left;">
+1173
+</td>
+<td style="text-align:left;">
+1039
+</td>
+<td style="text-align:left;">
+1094
+</td>
+<td style="text-align:left;">
+1403
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="report-the-mean-max-min-of-the-baths-and-value-variables." class="section level5">
+<h5>(4) Report the mean, max, min of the BATHS and VALUE variables.</h5>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">summary</span>(df<span class="op">$</span>BATHS)[<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">4</span>, <span class="dv">6</span>)]  <span class="co">#bathroom</span></span></code></pre></div>
+<pre><code>  Min.   Mean   Max. 
+0.0000 1.8601 7.0000 </code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">summary</span>(df<span class="op">$</span>VALUE)[<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">4</span>, <span class="dv">6</span>)]  <span class="co">#value</span></span></code></pre></div>
+<pre><code>   Min.    Mean    Max. 
+      1  216542 2214056 </code></pre>
+</div>
+<div id="generate-a-dummy-variable-indicating-the-number-of-bedrooms-is-greater-than-2.-report-the-frequency-table-of-the-generated-variable." class="section level5">
+<h5>(5) Generate a dummy variable indicating the number of bedrooms is greater than 2. Report the frequency table of the generated variable.</h5>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>df &lt;-<span class="st"> </span><span class="kw">mutate</span>(df, <span class="dt">two_plus_rooms =</span> <span class="kw">ifelse</span>(df<span class="op">$</span>BEDRMS <span class="op">&gt;</span><span class="st"> </span><span class="dv">2</span>, <span class="st">&quot;T&quot;</span>, <span class="st">&quot;F&quot;</span>))</span>
+<span id="cb13-2"><a href="#cb13-2"></a></span>
+<span id="cb13-3"><a href="#cb13-3"></a><span class="kw">xtabs</span>(<span class="op">~</span>df<span class="op">$</span>two_plus_rooms) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.data.frame</span>() <span class="op">%&gt;%</span><span class="st"> </span>kbt</span></code></pre></div>
+<table class="table table-striped table-hover table-condensed" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+df.two_plus_rooms
+</th>
+<th style="text-align:right;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+Freq
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+F
+</td>
+<td style="text-align:right;">
+2,409
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+T
+</td>
+<td style="text-align:right;">
+13,156
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="report-the-average-current-market-value-and-the-average-purchase-price-by-the-numbers-of-full-bedrooms-in-unit." class="section level5">
+<h5>(6) Report the average current market value and the average purchase price by the numbers of full bedrooms in unit.</h5>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>df3 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">group_by</span>(BEDRMS) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">summarise</span>(<span class="dt">mv =</span> <span class="kw">mean</span>(VALUE), <span class="dt">pp =</span> <span class="kw">mean</span>(LPRICE))</span>
+<span id="cb14-2"><a href="#cb14-2"></a>df3 <span class="op">%&gt;%</span><span class="st"> </span>kbt</span></code></pre></div>
+<table class="table table-striped table-hover table-condensed" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:right;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+BEDRMS
+</th>
+<th style="text-align:right;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+mv
+</th>
+<th style="text-align:right;font-weight: bold;color: white !important;background-color: #004d1f !important;">
+pp
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+81,000
+</td>
+<td style="text-align:right;">
+115,000
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+139,459
+</td>
+<td style="text-align:right;">
+96,432
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+154,191
+</td>
+<td style="text-align:right;">
+103,494
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+183,549
+</td>
+<td style="text-align:right;">
+123,254
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+273,921
+</td>
+<td style="text-align:right;">
+185,120
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+375,635
+</td>
+<td style="text-align:right;">
+256,123
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+485,449
+</td>
+<td style="text-align:right;">
+288,176
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+499,609
+</td>
+<td style="text-align:right;">
+259,594
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+499,687
+</td>
+<td style="text-align:right;">
+377,131
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="generate-the-scatter-plots-of-the-numbers-of-full-bedrooms-and-the-average-current-market-value." class="section level5">
+<h5>(7) Generate the scatter plots of the numbers of full bedrooms and the average current market value.</h5>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">gpt</span>(df3) <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x =</span> BEDRMS, <span class="dt">y =</span> mv) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks =</span> df3<span class="op">$</span>BEDRMS) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="st">    </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;numbers of full bedrooms and the average current market value&quot;</span>, </span>
+<span id="cb15-3"><a href="#cb15-3"></a>        <span class="dt">x =</span> <span class="st">&quot;# of bedrooms&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;average current market value&quot;</span>)</span></code></pre></div>
+<p><img src="hw1_files/figure-html/unnamed-chunk-8-1.png" width="2100" /></p>
+</div>
+<div id="run-a-linear-regression-with-at-least-3-explanatory-variables-to-explore-the-effects-of-housing-characteristics-on-the-current-market-value-of-the-unit.-report-the-output-and-analyze-your-results-for-example-by-describing-the-partial-effect-like-1-more-bedroom-increases-the-home-value-by-xx-with-other-factors-fixed." class="section level5">
+<h5>(8) Run a linear regression with at least 3 explanatory variables to explore the effects of housing characteristics on the current market value of the unit. Report the output and analyze your results, for example, by describing the partial effect like “1 more bedroom increases the home value by $xx with other factors fixed.”</h5>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="co"># df$LPRICE</span></span>
+<span id="cb16-2"><a href="#cb16-2"></a>fit &lt;-<span class="st"> </span><span class="kw">lm</span>(VALUE <span class="op">~</span><span class="st"> </span>PER <span class="op">+</span><span class="st"> </span>BATHS <span class="op">+</span><span class="st"> </span>BEDRMS, df)</span>
+<span id="cb16-3"><a href="#cb16-3"></a>fit <span class="op">%&gt;%</span><span class="st"> </span>stg</span></code></pre></div>
+<pre><code>
+===============================================
+                        Dependent variable:    
+                    ---------------------------
+                               VALUE           
+-----------------------------------------------
+PER                       -3,470.30000***      
+                            (993.20000)        
+                                               
+BATHS                     98,297.00000***      
+                           (2,067.80000)       
+                                               
+BEDRMS                    30,014.00000***      
+                           (1,915.60000)       
+                                               
+Constant                 -53,604.00000***      
+                           (5,267.40000)       
+                                               
+-----------------------------------------------
+Observations                  15,565           
+Residual Std. Error 161,444.00000 (df = 15561) 
+===============================================
+Note:               *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="co"># predict(fit, data.frame(PER = c(2), BATHS = c(1, 3, 5), BEDRMS = c(2)),</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a><span class="co"># interval = &#39;prediction&#39;)</span></span></code></pre></div>
+<p><strong><em><span style="font-size:17px;color:#8B30BB;">1 more person increases the home value by -$3470.3 with other factors fixed;<br /> 1 more Bathroom increases the home value by $98296.9 with other factors fixed;<br />1 more bedroom increases the home value by $30013.8 with other factors fixed. </span><br /></em></strong></p>
+<!-- ***<span style="font-size:17px;color:#8B30BB;">When holding person of household fixed at 2, number of bedrooms fixed at 2, when the number of bathroom is 1, the predicted house value is 97780; When the number of bathroom is 3, the predicted house value is 294374; When the number of bathroom is 5, the predicted house value is 490968; </span><br />*** -->
+</div>
+<div id="report-and-analyze-the-diagnostic-plots-of-the-model-you-specified-in-8." class="section level5">
+<h5>(9) Report and analyze the diagnostic plots of the model you specified in (8).</h5>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">plot</span>(fit)</span></code></pre></div>
+<p><img src="hw1_files/figure-html/unnamed-chunk-10-1.png" width="2100" /><img src="hw1_files/figure-html/unnamed-chunk-10-2.png" width="2100" /><img src="hw1_files/figure-html/unnamed-chunk-10-3.png" width="2100" /><img src="hw1_files/figure-html/unnamed-chunk-10-4.png" width="2100" /> <strong><em><span style="font-size:17px;color:#8B30BB;"> 1) Res-Fitted: It shows our residuals have non-linear patterns. We find equally spread residuals around a horizontal line without distinct patterns, that is a good indication that we don’t have non-linear relationships. Non-linear relationship was explained by the model and was left out in the residuals.<br /><br /> 2) Q-Q: It shows if residuals are normally distributed. We almost have a straight line in the begainning, but when quantiles hit the value of 2, the value of standardized residuals surge. Which indicate that we can not rely on the prediction when bathrooms number is large.<br /><br /> 3) Scale-Location: It shows we have residuals are equally distributed along the ranges of predictors. homoskedasticity. <br /><br /> 4) Residuals-Leverage: It identifies influential data points on your model. Our model is the typical look when there is no influential case, or cases. We can barely see Cook’s distance lines (a red dashed line) because all cases are well inside of the Cook’s distance lines. </span><br /></em></strong></p>
+<p><br /></p>
+</div>
+</div>
+
+    </div>
+    <div class="col-xs-2">
+        </div>
+  </div>
+  </div>
+  </div>
+  <div class="row">
+    </div>
+  </div>
+
+<script>
+$(document).ready(function () {
+  // add bootstrap table styles to pandoc tables
+  $('tr.header').parent('thead').parent('table').addClass('table table-striped table-hover');
+
+    var images = $('.pages img');
+  images.filter(function() {
+      if ($(this).parent().attr("class") == "figure") {
+          return(false)
+      } else {
+          return(true);
+      }
+  }).wrap("<div class='figure'></div>");
+  images.addClass("image-thumb").wrap("<div class='panel-body'></div>");
+  $('.figure p.caption').wrap("<div class='panel-footer'></div>");
+  $('.figure').addClass('panel panel-default');
+  
+    $('.pages img')
+ 	  .addClass("image-lb");
+  $('.pages').magnificPopup({
+	      type:'image',
+	      closeOnContentClick: false,
+	      closeBtnInside: false,
+        delegate: 'img',
+	      gallery: {enabled: false },
+          removalDelay: 500,
+          callbacks: {
+              beforeOpen: function() {
+                // just a hack that adds mfp-anim class to markup
+                this.st.image.markup = this.st.image.markup.replace('mfp-figure', 'mfp-figure mfp-with-anim');
+              }
+          },
+          mainClass: 'mfp-move-from-top',
+	      image: {
+	        verticalFit: true,
+            titleSrc: 'alt'
+	      }
+ 	    });
+ 	
+    
+    $('#toc ul li').first().addClass("active");
+    $('#toc ul li').attr("data-target", function() {
+        return($(this).children("a").attr("href"));
+    })
+    $('body .section.level1').first().addClass("active");
+    $('body .section.level1').not('.active').hide();
+    
+    $('#toc a[href*="#"]').click(function() {
+
+      var id = $(this).attr("href");
+      if (id === "#") return;
+      if (id.substring(0, 8) === "#dyntab-") return;
+      toggle_page(id);
+
+      // Menu
+      var menu_entry = $(".menu li[data-target='"+id+"']");
+      menu_entry.addClass("active");
+      $(".menu li").not(menu_entry).removeClass("active"); 
+      
+
+    });
+
+    function toggle_page(id) {
+      $(".page").not(page).removeClass("active").hide();
+      window.page = id;
+      var page = $(window.page);
+      window.location.hash = window.page;
+      //$(this).addClass("active");
+
+      page.show();
+
+      var totop = setInterval(function () {
+        $(".pages").animate({scrollTop: 0}, 0);
+      }, 10);
+
+      setTimeout(function () {
+        page.addClass("active");
+        setTimeout(function () {
+          clearInterval(totop);
+        }, 1000);
+      }, 100);
+
+      window.dispatchEvent(new Event('resize'));
+
+    }
+
+
+    $(".menu li").click(function () {
+
+      toggle_page($(this).data("target"));
+
+      // Menu
+      if (!$(this).data("target")) return;
+      if ($(this).is(".active")) return;
+      $(".menu li").not($(this)).removeClass("active");
+      $(this).addClass("active");
+
+    });
+  
+    
+
+
+    window.page = window.location.hash;
+    if (window.page != "") {
+      $(".menu").find("li[data-target=" + window.page + "]").trigger("click");
+    }
+
+    /* init material bootstrap js */
+    $.material.init();
+});
+</script>
+
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
