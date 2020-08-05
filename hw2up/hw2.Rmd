@@ -1,0 +1,506 @@
+---
+title: "HW2"
+author: "Siming Yan"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+og:
+  type: "article"
+  title: "opengraph title"
+  url: "optional opengraph url"
+  image: "optional opengraph image link"
+footer:
+  - content: '[link1](http://example.com/) • [link2](http://example.com/)<br/>'
+  - content: 'Copyright blah blah'
+
+output:    
+  html_document:
+    theme: cerulean
+    keep_md: true
+    toc: yes
+    toc_float: true
+    highlight: haddock
+
+---
+
+
+<html>
+<style> 
+div.bgm {background-color:#e6fff0; border-radius: 7px; padding: 10px;} 
+.ans {
+  color: purple;
+  font-weight: bold;
+}
+#main { 
+    color: #ff751a; 
+}
+</style>
+
+<div class = "bgm">
+
+<ul id="main">
+
+
+```{r setup, echo=FALSE, cache=FALSE, include = F}
+library(knitr)
+library(rmdformats)
+# library(xaringanthemer)
+## Global options
+options(max.print="75")
+knitr::opts_chunk$set(
+	fig.width = 7,
+	message = FALSE,
+	warning = FALSE,
+	cache = TRUE,
+	comment = NA,
+	dpi = 300,
+	prompt = FALSE,
+	tidy = TRUE
+)
+opts_knit$set(width=75)
+# knitr::opts_chunk$set()
+options(digits=5)
+options(scipen=5)
+knitr::opts_chunk$set(warning = F, message=F)
+
+
+```
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+# library(xaringanthemer)
+# style_duo_accent_inverse(primary_color = "#035AA6", secondary_color = "#03A696")
+```
+
+```{r setup2, include=FALSE}
+library(knitr)
+library(dplyr)
+library(tidyr)
+library(stargazer)
+library(tidyverse)
+library(formatR)
+library(data.table)
+# library(lmtest) #for coeftest() and bptest().
+# library(broom) #for glance() and tidy()
+# library(RCurl)# For the robust SE method 1
+# library(sandwich)
+library(mice) #check NA
+# library(MatchIt)
+library(ggthemes)
+library(RColorBrewer)
+library(kableExtra)
+library(MASS)
+library(ISLR)
+library(leaps)
+library(glmnet)
+```
+
+
+
+```{r functions, warning=F, message=F, include = F}
+kbt <- function(...){
+  knitr::kable(..., format.args = list(big.mark = ',', scientific = F)) %>%
+    kableExtra::kable_styling(c("striped", "hover", "condensed"),
+                               full_width = F,
+                               position = "center",
+                               row_label_position = "c") %>%
+   row_spec(0, bold = T, color = "white", background = "#004d1f")
+}
+
+gpt <- function(...){
+  ggplot2::ggplot(...) + 
+    theme_minimal() +
+    theme(plot.title = element_text(face = "bold", size = 14, hjust = 0.5),
+      plot.subtitle = element_text(face = "italic", size = 12, hjust = 0.5), 
+      axis.text.x = element_text(angle = 0, hjust = 0.5))
+}
+
+stg <- function(...){
+  stargazer::stargazer(..., 
+          type = "text",
+          # style = "qje",
+          # title = "daily_kwh ~ post:encouraged|customer_id + no.bill|0|customer_id",
+          keep.stat = c("n", "ser"),
+          digits = 5)
+}
+```
+
+
+
+### 1. Gradient
+Let F denote full gradient descent algorithm, S stochastic gradient descent, B mini-batch gradient descent, and N normal function approach. Choose the best (may be more than one or none) answer(s) for the following questions:
+
+##### (1) Which linear regression training algorithm can you use if you have a training set with millions of features? Which one you cannot use?
+
+***<span style="font-size:17px;color:#b540e3;">We can use F, S, B. We cannot use N, since there might be p>N.</span><br />***
+
+##### (2) Which algorithm(s) will get stuck in a local minimum when training a logistic regression model?
+
+***<span style="font-size:17px;color:#b540e3;">B,S</span><br />***
+
+##### (3) Which gradient descent algorithm will reach the vicinity of the optimal solution the fastest? Which will actually converge given enough training time?
+
+***<span style="font-size:17px;color:#b540e3;">S reach the vicinity of optimal fastest. F will finally converge.</span><br />***
+
+### 2. RSS
+Using a collected data set with 100 observations, a single predictor X, and a quantitative
+response Y , we fit a linear regression model and a separate cubic regression model to the data. The cubic model can be written as:$Y=β_0+β_1X+β_2X^2 +β_3X^3$
+
+##### (1) Suppose that the true relationship between X and Y is linear, i.e., Y = β0 + β1X + ε.
+
+##### (i) Consider the training residual sum of squares for the linear regression (RSStraining) and that for the cubic regression. Which one is smaller and why?
+
+```{r}
+set.seed(12)
+df <- data.frame(x = c(1:100), y = c(1:100) + sample(100)*(-1)^sample(100)/100)
+# summary(lm(y ~ x, df))
+# summary(lm(y~ x + I(x^2) + I(x^3), df))
+isTRUE(anova(lm(y ~ x, df))[2,2] > anova(lm(y ~ x + I(x^2) + I(x^3), df))[4,2])
+```
+
+***<span style="font-size:17px;color:#b540e3;">$RSS^{training}_C$ will be smaller since the regression function included more variables, which can potentially explain the undiscovered pattern of errors. Adding quadratic form and cubic form is helping the regression function to better explain the data.</span><br />***
+
+##### (ii) Answer (i) using test rather than training RSS, i.e., RSSL versus RSSC.
+
+```{r}
+pd_l <- predict(lm(y ~ x, df)) %>% 
+  data.frame() 
+pd_l <- rename(pd_l, "y"= `.` )
+
+pd_c <- predict(lm(y ~ x + I(x^2) + I(x^3), df)) %>% 
+  data.frame()
+pd_c <- rename(pd_c,"y"= `.` )
+
+pd_l$x <- c(1:100)
+pd_c$x <- c(1:100)
+
+isTRUE(anova(lm(y ~ x, pd_l))[2,2] > anova(lm(y ~ x + I(x^2) + I(x^3), pd_c))[4,2])
+
+```
+
+***<span style="font-size:17px;color:#b540e3;">We cannot surely tell which of $RSS^{test}_C$ and $RSS^{test}_L$ is larger. Test data is more flexible, but the cubic model can be too much flexible to the data, which can lead to a larger value of test RSS, which is known as overfitting.</span><br />***
+
+##### (2) Suppose that the true relationship between X and Y is not linear, but we don’t know how far it is from linear. Answer (i) and (ii) again.
+
+```{r}
+set.seed(255)
+df <- data.frame(x = c(1:100), 
+                 y = 
+                   c(1:100) +
+                   c(1:100)^2 +
+                   # c(1:100)^3 +
+                   # c(1:100)^4 +
+                   sample(100)*(-1)^sample(100)/1000)
+
+isTRUE(anova(lm(y ~ x, df))[2,2] > anova(lm(y ~ x + I(x^2) + I(x^3), df))[4,2])
+
+
+```
+
+***<span style="font-size:17px;color:#b540e3;">$RSS^{training}_C$ will be smaller since the regression function included more variables, it is more flexible, which can potentially explain more of the undiscovered pattern of errors. Adding quadratic form and cubic form is helping the regression function to better explain the data.</span><br />***
+
+
+```{r}
+pd_l <- predict(lm(y ~ x, df)) %>% 
+  data.frame() 
+pd_l <- rename(pd_l, "y"= `.` )
+
+pd_c <- predict(lm(y ~ x + I(x^2) + I(x^3), df)) %>% 
+  data.frame()
+pd_c <- rename(pd_c,"y"= `.` )
+
+pd_l$x <- c(1:100)
+pd_c$x <- c(1:100)
+isTRUE(anova(lm(y ~ x, pd_l))[2,2] > anova(lm(y ~ x + I(x^2) + I(x^3), pd_c))[4,2])
+```
+
+
+***<span style="font-size:17px;color:#b540e3;">We cannot surely tell which of $RSS^{test}_C$ and $RSS^{test}_L$ is larger. There too many possibilities of the true form of the relationship between x and y. When it is not far from linear, it tends to more likely we can obtain a result of $RSS^{test}_C$ > $RSS^{test}_L$. And when it is far from linear, it is more likely we obtain a result of $RSS^{test}_C$ < $RSS^{test}_L$.</span><br />***
+
+
+### 3. rss
+(10 pts) We perform best subset, forward stepwise, and backward stepwise selection on a single data set. For each approach, we obtain p + 1 models, containing 0, 1, 2, · · · , p predictors.
+
+<!-- https://blog.minitab.com/blog/adventures-in-statistics-2/which-is-better-stepwise-regression-or-best-subsets-regression -->
+
+##### (1) Which of the three models with k predictors has the smallest training RSS?
+
+***<span style="font-size:17px;color:#b540e3;">Best subset</span><br />***
+
+##### (2) Which of the three models with k predictors has the smallest test RSS?
+
+***<span style="font-size:17px;color:#b540e3;">We cannot tell which of the three models has the smallest test RSS, since test RSS is rather unpredictable. But through out cross validation and multiple ways of test RSS prediction way, we can guess best subset has smallest predicted test RSS.</span><br />***
+
+##### (3) Is the following statement True or False and why?
+
+##### (i) The predictors in the k-variable model identified by forward stepwise are a subset of the predictors in the (k + 1)-variable model identified by forward stepwise selection.
+
+***<span style="font-size:17px;color:#b540e3;">True, since the (k+1)-variable model is established over the previous model, which is exactly the k-variable model.</span><br />***
+
+##### (ii) The predictors in the k-variable model identified by backward stepwise are a subset of the predictors in the (k + 1)-variable model identified by backward stepwise selection.
+
+***<span style="font-size:17px;color:#b540e3;">True, since the (k)-variable model is established by subtract a most irrelevant variable from the previous model, which is exactly the (k+1)-variable model.</span><br />***
+
+### 4. Lasso
+(5 pts) For the LASSO regression, ridge regression and non-linear methods, evaluate the following statement and explain why. “Relative to least squares, the method is more flexible and hence will give improved prediction accuracy when its increases in bias is less than its decrease in variance.”
+
+
+![772-hw2-lasso&ridge](https://raw.githubusercontent.com/fyenne/picgallery/master/b-v-tradeoff.png)
+***<span style="font-size:17px;color:#b540e3;">The OLS estimator has the desired property of being unbiased. (On the right end of the curve, picture above) However, it can have a huge variance. For LASSO and ridge regression, they focus on reduce variance by slightly introducing the bias, in order to obtain a lower expected MSE or model complexity, to further generate more accurate predictions:
+$$
+L_{ridge}(\hat\beta) = \sum_{i = 1}^n(y_i - \beta_0 - \sum_{j = 1}^p\beta_jx_{ij})^2+
+\lambda\sum_{j = 1}^p\hat\beta_j^2
+\\
+L_{LASSO}(\hat\beta) = \sum_{i = 1}^n(y_i - \beta_0 - \sum_{j = 1}^p\beta_jx_{ij})^2+
+\lambda\sum_{j = 1}^p|\hat\beta_j|
+$$
+When λ = 0, then the lasso or ridge simply gives the least squares fit, and when λ becomes sufficiently large, the lasso (and ridge) gives the (vicinity) null model in which all coefficient estimates equal zero. Hence we believe this flexibility in choosing variables, enable Ridge and LASSO to generate a more accurate prediction.</span><br />***
+
+
+
+### 5. QDA
+(10 pts) Consider the QDA model with one predictor, i.e., p = 1. Suppose that we have K classes, and that if an observation belongs to the kth class then X comes from a univariate normal distribution,$X ∼ N(μ_k,σ_k^2)$. Prove that in this case, the Bayes classifier is quadratic.
+
+<span style="font-size:17px;color:#8B30BB;">As we have $X ∼ N(μ_k,σ_k^2)$, and according to Bayers' rule:
+$$
+\begin{eqnarray*}\\&&
+P_k(x) = \frac{\pi_k\frac{1}{\sqrt{(2\pi)} \sigma}
+\exp(-\frac{1}{\sqrt{2\sigma^2}}(x- \mu_k)^2)}
+{\sum_{l = 1}^K \pi_l \frac{1}{\sqrt{(2\pi)} \sigma}
+\exp(-\frac{1}{\sqrt{2\sigma^2}}(x- \mu_l)^2)}
+\\\\
+\end{eqnarray*}
+$$
+As the denominator is fixed for all class, take log form of numerator:
+$$
+\begin{eqnarray*}\\
+log(p_k(x))&&=log(\pi_k\frac{1}{(2\pi) \sigma})- \frac{1}{ 2\sigma^2}(x- \mu_k)^2 - {1\over 2}log(\sigma^2)
+\\
+&&= log(\pi_k) - \frac{1}{2\sigma^2}(x-\mu_k)^2 - {1\over 2}log(\sigma^2) + log(const.)
+\end{eqnarray*}
+$$
+As we are trying to maximize this formula, the constant term can be removed. And for a single variable case,
+$$
+\begin{eqnarray*}\\
+\delta_k(x)&&= \ log(\pi_k) - \frac{1}{ 2\sigma^2 }(x-\mu_k)^2  - {1\over 2}log(\sigma^2)
+\\&&
+\end{eqnarray*}
+$$
+from the formula we can see there always will be x in quadratic form as long as $\sigma^2$ is not identical for different classes.</span><br />
+
+### 6. Gini
+(10 pts) Consider the Gini index, classification error, and entropy in a simple classification setting with two classes. Create a single plot using R that displays each of these quantities as a function of pˆ .Note that the x-axis should display p ranging from 0 to 1, and the y-axis should display the value of the error metrics
+ 
+```{r}
+k = 2 
+p <- seq(0.01, 0.995, 0.005)
+gini.index <- k * p * (1 - p)
+class.error <- 1 - pmax.int(p, 1 - p)
+entropy <- - (p * log(p) + (1 - p) * log(1 - p))
+
+plt.d <- data.frame(gini.index, class.error, entropy, p) %>% 
+  pivot_longer(cols = c(gini.index, class.error, entropy))
+  
+gpt(plt.d) +
+  aes(x = p, y = value, group = name) + 
+  geom_point(aes(color = name))
+```
+
+
+### 7. R
+(30 pts) R application: for the coding questions, please report the results and write your analysis following the instructions. You should also submit the html file of your code (the same format as the lab assignments).
+
+Use the house Values dataset of HW 1 and the basic model below (in R notation) to do the following: VALUE ∼ AMMORT + EAPTBL + ECOM1 + ECOM2 + EGREEN + EJUNK + HOWH + ZINC2 + BATHS + BEDRMS
+Note that before you get started, you should *clean your data* (remove NAs, remove observations with negative values for ZINC2 and VALUE). We have several dummy variables in the model and some numerical variables having large values. *To better interpret your results, you can do log transformation of some (or all) numerical variables.*
+
+```{r , comment = F}
+df <- read.csv("./homes2004.csv")
+df <- na.omit(df)
+df <- df[!df$ZINC2 <= 0, ]
+df <- df[!df$VALUE < 0, ]
+# df$ZINC2 %>% summary
+
+
+df$AMMORT <- df$AMMORT %>% log()
+df$VALUE <- df$VALUE %>% log()
+df$ZINC2 <- df$ZINC2 %>% log()
+# for (i in 1:29){
+#   if (typeof(df[,i]) == "integer"){
+#   df[,i] <- log(df[,i])
+#   }
+# }
+
+which(is.infinite(df$ZINC2) == T)
+
+# df[!which(is.infinite(df$ZINC2) == T), ]
+```
+
+
+```{r, comment = F, warning = F, include = F}
+# is.na(df)
+# which(is.na(df$ECOM2) == T)
+# md.pattern(df)
+which(is.infinite(df[,15]) == T)
+# df[350,15]
+for (i in 1:29){
+ which( is.infinite(df[,i]) )%>% print()
+}
+```
+
+##### (1) Use the best subset selection algorithm to select the best model. Report the number, name, and corresponding coefficients of the included variables. *You can use one of the four assessment metrics (Cp, AIC, BIC, adjusted R2)* to compare the models. Explain the assessment metric you choose and how it helps you decide the optimal model.
+
+```{r}
+fit.f <- regsubsets(VALUE ~ AMMORT + EAPTBL + ECOM1 + ECOM2 + EGREEN + EJUNK + HOWH + ZINC2 + BATHS + BEDRMS, data = df, nvmax = 10)
+
+fit.su <- summary(fit.f)
+fit.su %>% names()
+```
+
+
+```{r}
+par(mfrow = c(2,2))
+plot(fit.su$cp, xlab = "number of variables", 
+     ylab = "cp", type = "l")
+plot(fit.su$adjr2, xlab = "number of variables",
+     ylab = "adjr2",type = "l")
+plot(fit.su$bic, xlab = "number of variables", 
+     ylab = "bic", type = "l")
+```
+
+
+```{r}
+which.max(fit.su$adjr2)
+which.min(fit.su$cp)
+which.min(fit.su$bic)
+```
+
+***<span style="font-size:17px;color:#8B30BB;">While using $R^2$ as our choosing standard, the coefficients are :</span><br />***
+
+```{r}
+coef(fit.f,id=9)
+```
+
+***<span style="font-size:17px;color:#8B30BB;">While using $BIC, C_p$ as our choosing standard, the coefficients are :</span><br />***
+
+```{r}
+coef_cp <- coef(fit.f,id=7)
+```
+
+
+***<span style="font-size:17px;color:#8B30BB;">I used three different assessment matrix to compare the models, $C_p$ and BIC are estimates of test MSE, and they adjust penalty regarding to the model size. The penalty increases as the number of predictors in the model increases, in order to adjust for the fact that the training error tends to underestimate the test error. Hence we intend to find optimal model when we have lowest estimated test error by using $C_p$ or BIC. Alternatively, the adjusted R-squared reflects how good is the model fits with the data, a higher value of R-squared model tends to have a better interpreting ability to the data. Even though it is quite intuitive, the adjusted R-squared is not as well motivated in statistical theory as AIC, BIC, and $C_p$.</span><br />***
+
+---
+
+
+
+##### (2) Use the forward stepwise selection algorithm to select the best model with 10 folds cross validation. Report the number, names, and corresponding coefficients of the included variables.
+
+```{r, include = F}
+predict.regsubsets = function(object,newdata,id){
+  form=as.formula(object$call[[2]])
+  mat=model.matrix(form,newdata) # equivalent to the test matrix for each round with different data sets
+  coefi=coef(object,id=id)
+  xvars=names(coefi)
+  mat[,xvars]%*%coefi # predicted y -- the output of the function
+}
+```
+
+
+```{r}
+k=10
+set.seed (1)
+folds=sample(1:k, nrow(df), replace=TRUE)
+cv.errors=matrix(NA, k, 10, dimnames=list(NULL, paste(1:10)))
+
+for(j in 1:k){
+    best.fit = regsubsets(VALUE ~ 
+                            AMMORT + EAPTBL + ECOM1 + 
+                            ECOM2 + EGREEN + EJUNK + 
+                            HOWH + ZINC2 + BATHS + 
+                            BEDRMS, 
+                          df[folds!=j, ], nvmax=10) # train the model
+  for(i in 1:10){
+    pred = predict.regsubsets(best.fit, df[folds==j, ], id=i) # test on the j-th subset
+    cv.errors[j,i]=mean((df$VALUE[folds == j] - pred)^2) # mean squared error, stored in the error matrix 
+  }
+} # return 10x10 matrix
+mean.cv.errors=apply(cv.errors,2,mean) # apply a function to margins of an array or matrix # mean by column
+mean.cv.errors %>% which.min
+
+
+fit.fwd <- regsubsets(VALUE ~ AMMORT + EAPTBL + ECOM1 + ECOM2 + EGREEN + EJUNK + HOWH + ZINC2 + BATHS + BEDRMS, data = df, nvmax=10, method="forward")
+coef(fit.fwd, 7) %>% kbt()
+```
+
+Hint: you can modify the code in lab 2.2 to get the results.
+
+##### (3) Use 10-fold cross validation to train the ridge model. Try different λ’s and report the best λ value. You should create the choice set of λ’s with at least 100 values.
+
+```{r ridge}
+grid = 10^seq(10, -2, length = 200)
+```
+
+
+```{r ridgje, include=F}
+x = model.matrix(VALUE ~ AMMORT + EAPTBL + ECOM1 + ECOM2 + EGREEN + EJUNK + HOWH + ZINC2 + BATHS + BEDRMS, data = df)[,-1]
+y = df$VALUE  
+
+
+set.seed(1)
+train=sample(1:nrow(x), nrow(x)/2)
+test=(-train)
+y.test=y[test]
+
+# set.seed(1)
+cv.out = cv.glmnet(x[train,], y[train], alpha=0) 
+# cv.out %>% names()
+# use cross validation to choose the tuning parameter lambda, default folds = 10
+plot(cv.out)
+bestlam=cv.out$lambda.min
+bestlam
+#--------------------------------------------
+```
+
+
+```{r ridge2}
+ridge <- model.matrix(VALUE~AMMORT + EAPTBL + ECOM1 + ECOM2 + EGREEN + EJUNK + HOWH + ZINC2 + BATHS + BEDRMS, data = df)[,-1]
+
+cv.ridge <- cv.glmnet(ridge, df$VALUE, alpha = 0, nfolds = 10, lambda = grid)
+plot(cv.ridge)
+cv.ridge$lambda.min
+```
+
+##### (4) Use 10-fold cross validation to train the lasso model. Try different λ’s and report the best λ value. You should create the choice set of λ’s with at least 100 values. Plot the graph that shows how the MSE changes with λ. Report the coefficients of the variables in the best model and interpret your results.
+
+```{r}
+grid <- 10^seq(1, -3, length = 200)
+lasso <- model.matrix(VALUE~AMMORT + EAPTBL + ECOM1 + ECOM2 + EGREEN + EJUNK + HOWH + ZINC2 + BATHS + BEDRMS, data = df)[,-1]
+
+cv.out = cv.glmnet(lasso, df$VALUE, alpha=1, nfolds = 10, lambda = grid)
+plot(cv.out)
+
+```
+
+```{r}
+bestlam=cv.out$lambda.min
+bestlam
+```
+
+```{r}
+lasso.final = glmnet(lasso, df$VALUE, alpha=1)
+lasso.coef <- predict(lasso.final, s = bestlam, type = "coefficients")[1:11, ]
+lasso.coef[lasso.coef!=0]
+```
+
+***<span style="font-size:17px;color:#8B30BB;">The coefficients are shown above. We can see VALUE is positively correlated to AMMORT,BATHS, BEDRMS etc. </span><br />***
+
+##### (5) Compare the best models you obtained in (1), (2), (3), and (4), what do you find? (For example, how many variables are included in each model? the coefficients?)
+
+***<span style="font-size:17px;color:#8B30BB;">From results above, our results shown that: by using best subset method, choosing according to $C_p$ and BIC, and using Forward Stepwise Subset method, we can obtain best model with 7 variables included; When choosing according to adjusted R-squared, and using Lasso method, the variables' number is 9.<br />And for Ridge model, we surely have all 10 variables included. And its coefficient of EAPTBL is pretty small, which makes it similar to those models who have nine variabels.</span><br />***
+
+
+
+
+
+
+
+
+
+<br />

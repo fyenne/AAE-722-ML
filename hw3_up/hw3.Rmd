@@ -1,0 +1,536 @@
+---
+title: "HW3"
+author: "Siming Yan"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+og:
+  type: "article"
+  title: "opengraph title"
+  url: "optional opengraph url"
+  image: "optional opengraph image link"
+footer:
+  - content: '[link1](http://example.com/) • [link2](http://example.com/)<br/>'
+  - content: 'Copyright blah blah'
+
+output:    
+  html_document:
+    theme: cerulean
+    keep_md: true
+    toc: yes
+    toc_float: true
+    highlight: haddock
+
+---
+
+
+<html>
+<style> 
+div.bgm {background-color:#e6fff0; border-radius: 7px; padding: 10px;} 
+.ans {
+  color: purple;
+  font-weight: bold;
+}
+#main { 
+    color: #ff751a; 
+}
+</style>
+
+<div class = "bgm">
+
+<ul id="main">
+
+
+```{r setup, echo=FALSE, cache=FALSE, include = F}
+library(knitr)
+library(rmdformats)
+# library(xaringanthemer)
+## Global options
+options(max.print="75")
+knitr::opts_chunk$set(
+	fig.width = 7,
+	message = FALSE,
+	warning = FALSE,
+	cache = TRUE,
+	comment = NA,
+	dpi = 300,
+	prompt = FALSE,
+	tidy = TRUE
+)
+opts_knit$set(width=75)
+# knitr::opts_chunk$set()
+options(digits=5)
+options(scipen=5)
+knitr::opts_chunk$set(warning = F, message=F)
+
+
+```
+
+## setup
+
+```{r setup2, include=FALSE}
+library(knitr)
+library(dplyr)
+library(tidyr)
+library(stargazer)
+library(tidyverse)
+library(formatR)
+library(data.table)
+library(mice)  
+library(RColorBrewer)
+library(kableExtra)
+
+library(ISLR)
+library(leaps)
+library(glmnet)
+library(tree)
+library(rpart)
+library(e1071)
+library(MASS)
+library(neuralnet)
+library(boot)
+```
+
+
+```{r functions, warning=F, message=F, include = F}
+kbt <- function(...){
+  knitr::kable(..., format.args = list(big.mark = ',', scientific = F)) %>%
+    kableExtra::kable_styling(c("striped", "hover", "condensed"),
+                               full_width = F,
+                               position = "center",
+                               row_label_position = "c") %>%
+   row_spec(0, bold = T, color = "white", background = "#004d1f")
+}
+
+gpt <- function(...){
+  ggplot2::ggplot(...) + 
+    theme_minimal() +
+    theme(plot.title = element_text(face = "bold", size = 14, hjust = 0.5),
+      plot.subtitle = element_text(face = "italic", size = 12, hjust = 0.5), 
+      axis.text.x = element_text(angle = 0, hjust = 0.5))
+}
+
+stg <- function(...){
+  stargazer::stargazer(..., 
+          type = "text",
+          # style = "qje",
+          # title = "daily_kwh ~ post:encouraged|customer_id + no.bill|0|customer_id",
+          keep.stat = c("n", "ser"),
+          digits = 5)
+}
+```
+
+
+### 1. Here we explore the maximal margin classifier using the data set listed in the table below, which has 7 observations in 2 dimensions that belong to two classes.
+
+```{r}
+
+rm(list = ls())
+x = matrix(c(3,2,4,1,2,4,4,4,2,4,4,1,3,1),  nrow = 7, ncol = 2)
+df <- data.frame(x = x, y = c(1, 1, 1, 1, -1, -1, -1) %>% as.factor())
+ggplot(df, aes(x= x.1, y = x.2, color = y)) + geom_point(shape = 2, size = 3)
+```
+
+(1) (4 pts) Sketch the optimal separating hyperplane in the figure below and provide the equation for this hyperplane in the form of β0 + β1X1 + β2X2 = 0.
+
+
+```{r, comment=F}
+# 
+sv1 <- svm(y~., data= df, kernel="linear", cost=10, scale=FALSE)
+sv1 %>% plot(df)
+sv1 %>% summary
+#--------------------------------------------
+# 
+# set.seed(31)
+# tune.out <- tune(svm, y ~ . , data = df,
+#                  kernel="linear" ,
+#                  ranges = list(cost=c(.01, .1 , 1, 10, 100, 1000)),
+#                  tunecontrol = tune.control(sampling = "cross", cross = 5))
+# # 
+# # #--------------------------------------------
+# summary(tune.out)
+# # tune.out$best.model
+# # 
+# bestmod <- tune.out$best.model
+# summary(bestmod)
+# plot(bestmod, df)
+```
+ 
+***<span style="font-size:17px;color:#8B30BB;">
+$$
+-2 \cdot X_1 + 2\cdot X_2 +1 = 0
+$$
+</span><br />***
+
+
+(2) (2 pts) Describe the classification rule for the maximal margin classifier. It should be something along the lines of “Classify to 􏰡 if · · ·, and classify to △ otherwise.”
+
+***<span style="font-size:17px;color:#8B30BB;">Classify to yellow if $-2.95\cdot X_1 + 3.81\cdot X_2 -0.714 < 0$, classify to red if $-2.95\cdot X_1 + 3.81\cdot X_2 -0.714 = 0>0$.</span><br />***
+
+
+(3) (2 pts) On the figure, indicate the margin for the maximal margin hyperplance. Calculate the margin.  Note that the distance of the point (x0, y0) to the line ax + by + c = 0 is |ax0 +by0 +c|/√a2+b2 .
+
+ 
+```{r, comment = F, message=F}
+# beta = drop(t(bestmod$coefs)%*%x[bestmod$index,])
+# beta0 = bestmod$rho
+# 
+# intercept1 <- beta0 / beta[1]
+# slope1 <- -beta[2] / beta[1]
+
+#--------------------------------------------
+
+w <- t(sv1$coefs) %*% sv1$SV
+beta1 <- -w[2]/w[1]
+beta0 = sv1$rho/w[1]
+  
+# w <- t(bestmod$coefs) %*% bestmod$SV
+# beta1 <- -w[2]/w[1]
+# beta0 = bestmod$rho/w[1]
+# beta
+```
+
+***<span style="font-size:17px;color:#8B30BB;">
+\begin{eqnarray*}\\
+&&β_0 + β_1X1 + β_2X_2 = 0.\\&&
+
+AS: Dis = {|ax_0 + by_0 + c |\over{\sqrt{(a^2+b^2)}}}\\\\&&
+Dis = 0.3535534
+\end{eqnarray*}
+</span><br />***
+
+
+```{r}
+
+p <- ggplot(data = df)+
+  aes(x = x.2) +
+  geom_point(aes(y = x.1))+
+  geom_abline(intercept = c(sv1$rho/w[1]), 
+              slope = beta1) +
+  geom_abline(intercept = (sv1$rho/w[1]+(1/w[1])),
+              slope = beta1, linetype = "dashed", alpha = I(.6))+
+  geom_abline(intercept = (sv1$rho/w[1]-(1/w[1])),
+              slope = beta1, linetype = "dashed", alpha = I(.6))+
+  geom_segment(aes(x = 3, y = 4), xend = (7.5/2-.5), yend = 7.5/2, color = "#FA0000")+
+  theme(plot.background = element_rect(fill = "azure2"))
+
+p + expand_limits(x = 0, y = 0)
+# 
+# y = -x + 7
+# y = x+.5
+```
+
+(4) (2 pts) What are the support vectors for the maximal margin classifier?
+
+***<span style="font-size:17px;color:#8B30BB;">Four support vectors are (2,1),(2,2),(4,3),(4,4). </span><br />***
+
+### 2. (10 pts) Use the OJ data set, which is part of the ISLR package, to answer the following questions.'
+
+(1) Create a training set containing a random sample of 900 observations, and a test set containing the remaining observations.
+
+```{r}
+df <- OJ
+# ?OJ 
+set.seed(1)
+train_ind <- sample(seq_len(nrow(df)), size = 900)
+
+train <- df[train_ind, ]
+test <- df[-train_ind, ]
+```
+
+(2) Fit a tree to the training data, with Purchase as the response and the other variables as predictors. Use the summary function to produce summary statistics about the tree, and describe the results obtained. What is the training error rate? How many terminal nodes does the tree have?
+
+```{r}
+tree(Purchase~. , train) %>% summary
+```
+
+***<span style="font-size:17px;color:#8B30BB;">Error rate 16.2%. Terminal nodes number is 8.</span><br />***
+
+(3) Type in the name of the tree object in order to get a detailed text output. Pick one of the terminal nodes, and interpret the information displayed.
+
+```{r}
+tree1 <- tree(Purchase~. , train)
+tree1
+```
+
+***<span style="font-size:17px;color:#8B30BB;">For customer loyalty to Citrus Hill orange juice (LoyalCH) below 0.0356415, the number is 66, and they have a larger chance to buy Minute Maid Orange Juice, the prob is 0.985.</span><br />***
+
+
+(4) Create a plot of the tree, and interpret the results.
+
+```{r, warning=F}
+tree(Purchase~. , train) %>% plot 
+tree(Purchase~. , train) %>% text(pretty=0)
+```
+
+***<span style="font-size:17px;color:#8B30BB;">The tree shown above mainly divide regarding to the term of "LoyalCH", there are 8 terminal nodes, we can see when "LoyalCH" is low, people intends to buy MM while "price difference" of two band is no more than 0.05. When "loyalCH" is high, people are more likely to buy CH.</span><br />***
+
+(5) Predict the response on the test data, and produce a confusion matrix comparing the test labels to the predicted test labels. What is the test error rate?
+
+```{r}
+
+tp1 <- predict(tree1, test, type = "class")
+
+table(tp1, df$Purchase[-train_ind])
+(6+23)/170
+```
+
+***<span style="font-size:17px;color:#8B30BB;">the test error rate is 0.17059</span><br />***
+
+
+(6) Apply the cv.tree() function to the training set in order to determine the optimal tree size.
+
+```{r, collapse=F}
+set.seed(1)
+cvtree <- cv.tree(tree1, FUN = prune.misclass)
+cvtree
+
+which.min(cvtree$dev)
+```
+
+***<span style="font-size:17px;color:#8B30BB;">The tree with 6 terminal nodes leads to lowest Cross-Validation error rate.</span><br />***
+
+(7) Produce a plot with tree size on the x-axis and cross-validated classification error rate on the y-axis.
+
+```{r, echo = F}
+plt.t <- data.frame(cvtree$size, cvtree$dev)
+ggplot(plt.t) +
+  aes(x = cvtree.size, y = cvtree.dev) +
+  geom_line(size = .8L, colour = "#0c4c8a") +
+  scale_x_continuous(breaks = c(1:10)) +
+  theme_minimal() +
+  geom_hline(aes(yintercept = 159), linetype =6, color = "red", alpha = I(3/4))
+
+```
+
+
+(8) Which tree size corresponds to the lowest cross-validated classification error rate?
+
+***<span style="font-size:17px;color:#8B30BB;">The tree with 6 terminal nodes leads to lowest Cross-Validation error rate.</span><br />***
+
+(9) Produce a pruned tree corresponding to the optimal tree size obtained using cross-validation.
+
+```{r}
+# pick 7
+prune_tree <- prune.misclass(tree1, best = 6)
+plot(prune_tree)
+text(prune_tree, pretty = 0)
+```
+
+
+(10) Compare the training error rates between the pruned and unpruned trees. Which is higher?
+
+```{r}
+
+summary(tree1)$misclass
+
+summary(prune_tree)$misclass
+
+144/900
+
+```
+
+***<span style="font-size:17px;color:#8B30BB;">All same.</span><br />***
+
+(11) Compare the test error rates between the pruned and unpruned trees. Which is higher?
+
+```{r}
+
+tp1 <- predict(tree1, test, type = "class")
+
+table(tp1, df$Purchase[-train_ind])
+(6+23)/170
+
+tp2 <- predict(prune_tree, test, type = "class")
+table(tp2, df$Purchase[-train_ind])
+(5+24)/170
+```
+
+***<span style="font-size:17px;color:#8B30BB;">The same.</span><br />***
+
+### 3. (10 pts) Based on the Auto data set, predict whether a given car gets high or low gas mileage.
+
+```{r, echo = F}
+
+df <- read.csv("./Auto.csv")
+```
+
+
+(1) Create a binary variable that takes on a 1 for cars with gas mileage above the median, and a 0 for cars with gas mileage below the median.
+
+```{r}
+df <- mutate(df, above_m = ifelse(df$mpg > median(df$mpg), 1, 0) %>% as.factor())
+```
+
+
+```{r, include = F}
+df$horsepower <- df$horsepower %>% as.factor()
+df$name <- df$name %>% as.factor()
+```
+
+(2) Fit a support vector classifier to the data with various values of cost, in order to predict whether a car gets high or low gas mileage. Report the cross-validation errors associated with different values of this parameter. Comment on your results.
+
+```{r}
+set.seed(1)
+tune.out <- tune(svm, above_m ~. -name,
+                 data = df,
+                 kernel = "linear",
+                 ranges = list(cost=c(0.001, 0.01, 0.1, 1,5,10,100)) )
+
+summary(tune.out)$performances
+
+```
+
+```{r}
+bestmod <- tune.out$best.model
+bestmod %>% summary
+```
+
+
+
+***<span style="font-size:17px;color:#8B30BB;">The model with lowest value of cross validation would be when cost = 5. Best model summary shown as above, number of Support vectors is 36. </span><br />***
+
+
+(3) Now repeat (2), this time using SVMs with radial and polynomial basis kernels, with different values of gamma and degree and cost. Comment on your results.
+
+```{r}
+tune.out2 <- tune(svm, above_m ~. -name ,
+                 data = df,
+                 kernel = "radial",
+                 ranges = list(cost = c(0.001, 0.01, 0.1, 1,5,10,100),
+                               gamma = c(0.5,1,2,3,4)) )
+
+tune.out2 %>% summary
+
+
+tune.out2$best.model %>% summary
+
+```
+
+***<span style="font-size:17px;color:#8B30BB;">Using radial kernel, the best model obtained when cost = 10, number of Support Vector is 215.</span><br />***
+
+```{r}
+tune.out3 <- tune(svm, above_m ~. -name,
+                 data = df,
+                 kernel = "polynomial",
+                 ranges = list(cost = c(0.001, 0.01, 0.1, 1, 5, 10),
+                               gamma = c(0.5,1,2,3,4),
+                               degree = c(1:3)) )
+
+tune.out3 %>% summary
+
+
+tune.out3$best.model %>% summary
+
+```
+
+***<span style="font-size:17px;color:#8B30BB;">While using polynomial kernel, best model obtained when cost = 10, degree = 1, number of Support Vector is 22.</span><br />***
+
+
+### 4. (10 pts) Use the Boston data set in the MASS package to predict the *median value of owner-occupied homes *(in \$1000’s) by training the neural networks. Employ all available predictors in the data, including: (i) crim - per capita crime rate by town, (ii) zn - proportion of residential land zoned for lots over 25,000 sq.ft., (iii) indus - proportion of non-retail business acres per town, (iv) chas - Charles River dummy variable (1 if tract bounds river; 0 otherwise), (v) nox - nitric oxides concentration (parts per 10 million), (vi) RM - average number of rooms per dwelling, (vii) age - proportion of owner-occupied units built prior to 1940, (viii) dis - weighted distances to five Boston employment centers, (ix) rad - index of accessibility to radial highways, (x) tax - full-value property-tax rate per \$10,000, (xi) ptratio-pupil-teacher ratio by town, (xii) black - 1000(Bk − 0.63)2 where Bk is the proportion of blacks by town, (xiii) lstat - % lower status of the population.
+
+
+```{r}
+df <- Boston
+```
+
+```{r}
+set.seed(6)
+samplesize = 0.75 * nrow(df)
+index = sample(nrow(df), size = samplesize)
+
+# Create training and test set
+dftrain = df[index, ]
+dftest = df[-index, ]
+
+max = apply(df , 2 , max)
+min = apply(df, 2 , min)
+scaled = as.data.frame(scale(df, center = min, scale = max - min))
+
+trainNN = scaled[index , ]
+testNN = scaled[-index , ]
+```
+
+(1) When training your network,*vary the number of hidden layer from 1 to 10* but keep the number of *neurons in each layer at 5*. Find the best network that has the *lowest MSE*. Remember to *apply min-max scale to the data before fitting the network*. Also split the data to 75% training and 25% test data.
+
+```{r, include = F}
+NN1 <- NULL
+RMSE.NN <- {}
+```
+
+
+```{r, comment = F}
+for(i in 1:10){
+    NN1[[i]] = list(5 %>% rep(i))
+}
+ 
+for (i in 1:10){
+  set.seed(13)
+  samplesize = 0.75 * nrow(df)
+  index = sample(nrow(df), size = samplesize)
+  trainNN = scaled[index , ]
+  testNN = scaled[-index , ]
+  dftest = df[-index,]
+# --------------------------------------------  
+  
+  NN <- neuralnet(medv ~ ., trainNN, hidden = NN1[[i]][[1]] %>% as.numeric(), linear.output = T )
+  predict_nn <- compute(NN, testNN[, c(1:13)])
+  predict_nn = (predict_nn$net.result*(max(df$medv)-min(df$medv)))+min(df$medv)
+  RMSE.NN[i] <- (sum((dftest$medv - predict_nn)^2)/nrow(dftest))^0.5
+} 
+
+which.min(RMSE.NN)
+
+# --------------------------------------------
+# plot(NN)
+```
+
+(2) Do 10-fold cross validation on the network determined in (1) and report the mean CV error.
+
+```{r}
+
+library(plyr)
+```
+
+```{r}
+i = which.min(RMSE.NN)[1]
+
+NN <- neuralnet(medv ~ ., trainNN, hidden = NN1[[i]][[1]] %>% as.numeric(), linear.output = T )
+ 
+```
+
+```{r}
+set.seed(450)
+cv.error <- NULL
+k <- 10
+
+
+# pbar <- create_progress_bar('text')
+# pbar$init(k)
+
+for(i in 1:k){
+    set.seed(13)
+    samplesize = 0.75 * nrow(df)
+    index = sample(nrow(df), size = samplesize)
+    trainNN = scaled[index , ]
+    testNN = scaled[-index , ]
+    dftest = df[-index,]
+      # 
+    NN <- neuralnet(medv ~ ., trainNN, hidden = NN1[[i]][[1]] %>% as.numeric(), linear.output = T )
+    
+    pr.nn <- compute(NN, testNN[,1:13])
+    pr.nn <- pr.nn$net.result*(max(df$medv)-min(df$medv))+min(df$medv)
+    
+    test.cv.r <- (testNN$medv)*(max(df$medv)-min(df$medv))+min(df$medv)
+    
+    cv.error[i] <- sum((test.cv.r - pr.nn)^2)/nrow(testNN)
+    
+    # pbar$step()
+}
+
+```
+
+```{r}
+cv.error %>% data.frame %>% transpose() %>% kbt 
+mean(cv.error)
+```
+
+***<span style="font-size:17px;color:#8B30BB;">mean cv.error :21.554</span><br />***
