@@ -1,0 +1,796 @@
+---
+title: "AAE722 Group Project beta2"
+author: "Yuhan Wang & Siming Yan"
+date: "2020/8/6"
+output:
+  rmdformats::readthedown:
+    highlight: kate
+    geometry: margin = .5in
+    code_folding: "hide"
+---
+
+<style>
+div.blue { background-color:#FDF6E3; border-radius: 5px; padding: 10px;}
+</style>
+
+<div class = "blue">
+
+<div class="mycontent">
+
+
+```{r setup, echo=FALSE, cache=FALSE, include=FALSE}
+library(knitr)
+library(rmdformats)
+library(readr)
+library(stringr)
+library(data.table)
+library(naniar)
+library(scales)
+library(ggthemr)
+library(trelliscopejs)
+library(caret)
+library(ranger)
+library(fastDummies)
+library(neuralnet)
+library(plm)
+library(gamlr)
+library(kernlab)
+library(glmnet)
+library(e1071)
+library(dplyr)
+library(ggplot2)
+library(gbm)
+
+## Global options
+options(max.print="75")
+opts_chunk$set(echo=TRUE,
+	             cache=TRUE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=75)
+
+ggthemr('light',type = 'outer')
+options(digits=4)
+UsedCarPrice_data <- read_csv("UsedCarPrice_data.csv")
+```
+
+## data analysis
+
+```{r}
+str(UsedCarPrice_data)
+```
+
+```{r,include=FALSE}
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+```
+
+
+```{r}
+UsedCarPrice_data$Location <- as.factor(UsedCarPrice_data$Location)
+UsedCarPrice_data$Year <- as.factor(UsedCarPrice_data$Year)
+UsedCarPrice_data$Fuel_Type <- as.factor(UsedCarPrice_data$Fuel_Type)
+UsedCarPrice_data$Transmission <- as.factor(UsedCarPrice_data$Transmission)
+UsedCarPrice_data$Owner_Type <- as.factor(UsedCarPrice_data$Owner_Type)
+
+UsedCarPrice_data$Engine <- as.numeric(str_split(string = UsedCarPrice_data$Engine, pattern = " ", simplify = TRUE)[,1])
+UsedCarPrice_data$Power <- as.numeric(str_split(string = UsedCarPrice_data$Power, pattern = " ", simplify = TRUE)[,1])
+UsedCarPrice_data$New_Price <- as.numeric(str_split(string = UsedCarPrice_data$New_Price, pattern = " ", simplify = TRUE)[,1])
+UsedCarPrice_data$Mileage_Type <- str_split(string = UsedCarPrice_data$Mileage, pattern = " ", simplify = TRUE)[,2]
+UsedCarPrice_data$Mileage <- as.numeric(str_split(string = UsedCarPrice_data$Mileage, pattern = " ", simplify = TRUE)[,1])
+UsedCarPrice_data <- UsedCarPrice_data %>% mutate(Mileage_Type = ifelse(Mileage_Type == "",NA,Mileage_Type))  
+UsedCarPrice_data$Mileage_Type <- as.factor(UsedCarPrice_data$Mileage_Type)
+str(UsedCarPrice_data)
+```
+
+```{r}
+UsedCarPrice_data <-  mutate(UsedCarPrice_data, Price_NA = ifelse(is.na(Price),"NA","!NA")) 
+UsedCarPrice_data$Price_NA <- as.factor(UsedCarPrice_data$Price_NA)
+vis_miss(UsedCarPrice_data, cluster = TRUE)
+```
+
+```{r}
+ggplot(UsedCarPrice_data, aes(x = Year, fill = Price_NA)) +
+geom_bar(position = "stack",aes(y = ifelse(fill=='!NA',
+      (..count..)/6019 ,-(..count..)/1234))) + 
+  scale_y_continuous(labels = scales::percent,limits=c(-0.15,0.15),oob = rescale_none) + ylab("proportion") + coord_flip()
+```
+
+```{r, warning=FALSE}
+p1 <- ggplot(UsedCarPrice_data, aes(x = Engine, color = Price_NA)) +
+geom_density() + theme(legend.position = "none")
+
+p2 <- ggplot(UsedCarPrice_data, aes(x = Power, color = Price_NA)) +
+geom_density() + theme(legend.position = "none")
+
+p3 <- ggplot(UsedCarPrice_data, aes(x = Seats, color = Price_NA)) +
+geom_density() + theme(legend.position = "none")
+
+p4 <- ggplot(UsedCarPrice_data, aes(x = Kilometers_Driven, color = Price_NA)) +
+geom_density() + theme(legend.position = "none")
+
+multiplot(p1, p2, p3, p4, cols=2)
+
+p5 <- ggplot(UsedCarPrice_data, aes(x = Location, fill = Price_NA)) +
+geom_bar(position = "dodge",aes(y = ifelse(fill=='!NA',
+      (..count..)/6019 ,(..count..)/1234))) + theme(axis.text.x = element_text(angle=45,vjust=0.5)) + 
+  scale_y_continuous(labels = scales::percent,limits=c(0,0.15),oob = rescale_none) + ylab("proportion") + theme(legend.position = "none")
+
+p6 <- ggplot(UsedCarPrice_data, aes(x = Fuel_Type, fill = Price_NA)) +
+geom_bar(position = "dodge",aes(y = ifelse(fill=='!NA',
+      (..count..)/6019 ,(..count..)/1234))) + theme(axis.text.x = element_text(angle=45,vjust=0.5)) + 
+  scale_y_continuous(labels = scales::percent,limits=c(0,0.6),oob = rescale_none) + ylab("proportion") + theme(legend.position = "none")
+
+p7 <- ggplot(UsedCarPrice_data, aes(x = Transmission, fill = Price_NA)) +
+geom_bar(position = "dodge",aes(y = ifelse(fill=='!NA',
+      (..count..)/6019 ,(..count..)/1234))) + theme(axis.text.x = element_text(angle=45,vjust=0.5)) + 
+  scale_y_continuous(labels = scales::percent,limits=c(0,0.75),oob = rescale_none) + ylab("proportion") + theme(legend.position = "none")
+
+p8 <- ggplot(UsedCarPrice_data, aes(x = Owner_Type, fill = Price_NA)) +
+geom_bar(position = "dodge",aes(y = ifelse(fill=='!NA',
+      (..count..)/6019 ,(..count..)/1234))) + theme(axis.text.x = element_text(angle=45,vjust=0.5)) + 
+  scale_y_continuous(labels = scales::percent,limits=c(0,0.9),oob = rescale_none) + ylab("proportion") + theme(legend.position = "none")
+
+multiplot(p5, p6, p7, p8, cols=2)
+```
+
+```{r}
+UCP_data <- UsedCarPrice_data %>% filter(!is.na(Price))
+UCP_data <- UCP_data[,-16]
+UCP_data <- UCP_data[,-13]
+UCP_data <- UCP_data[,-2]
+
+UCP_data <- na.omit(UCP_data)
+UCP_data$Kilometers_Driven <- log(UCP_data$Kilometers_Driven)
+```
+
+```{r}
+#jsonp = "application/javascript"
+#ggplot(UCP_data) +
+#  geom_boxplot(aes(x = Year, y = Price)) + coord_flip() +
+#  facet_trelliscope( ~ Location, nrow = 2, ncol = 6)
+```
+
+
+```{r}
+myControl <- trainControl(
+  method = "cv", 
+  number = 10,
+)
+```
+
+```{r}
+UCP_dummy <- fastDummies::dummy_cols(UCP_data)
+UCP_dummy <- UCP_dummy[,-c(1,2,3,5,6,7,13)]
+UCP_dummy <- UCP_dummy[,-c(7,18,43,46,48,53)]
+str(UCP_dummy)
+```
+
+# Prediction
+
+```{r}
+samplesize = 0.75 * nrow(UCP_dummy)
+set.seed(123)
+index = sample(nrow(UCP_dummy),size = samplesize)
+
+# creating training and test set
+UCP_train = UCP_dummy[index,]
+UCP_test = UCP_dummy[-index,]
+```
+
+## Linear Regression
+
+```{r message=FALSE, warning=FALSE}
+# From previous step
+tuneGrid <- data.frame(
+    alpha = seq(0, 1, length = 5),
+    lambda = seq(0.0001, 1, length = 20)
+)
+
+# Fit random forest: model
+lr_model <- train(
+  Price ~ .,
+  data = UCP_train, 
+  method = "glmnet",
+  tuneGrid = tuneGrid,
+  trControl = myControl
+)
+
+# Print model to console
+tuneGrid
+lr_model
+plot(lr_model)
+```
+
+```{r}
+lr_model$bestTune
+```
+
+
+```{r}
+pred_Price <- predict(lr_model, newdata = UCP_test)
+final <- as.data.frame(cbind(pred_Price,UCP_test$Price))
+names(final) <- c("pred_Price","Price")
+p11 <- ggplot(final, aes(x=pred_Price,y=Price)) + 
+  geom_point(alpha=0.4, col ="grey") + 
+  scale_x_continuous(limits=c(0,100)) +
+  scale_y_continuous(limits=c(0,100)) +
+  geom_abline(intercept=0,slope=1) +
+  geom_smooth(se=0,method = "lm") +
+  coord_fixed(1) +
+  ggtitle("LR")
+
+p11
+```
+
+```{r}
+LR_RMSE <- sqrt(sum((final$pred_Price-final$Price)^2)/nrow(final))
+LR_RMSE
+```
+
+## Support Vector Machines with Radial Basis Function Kernel
+
+```{r, include=FALSE}
+# From previous step
+tuneGrid <- data.frame(
+  .C = c(0.1,1,10,50)
+)
+
+# Fit random forest: model
+svmR_model <- train(
+  Price ~ .,
+  tuneLength = 1,
+  data = UCP_train, 
+  method = 'svmRadialCost',
+  tuneGrid = tuneGrid,
+  trControl = trainControl(
+    method = "cv", 
+    number = 10, 
+    verboseIter = FALSE
+  )
+)
+
+svmR_model
+plot(svmR_model)
+```
+
+```{r}
+pred_Price <- predict(svmR_model, newdata = UCP_test)
+final <- as.data.frame(cbind(pred_Price,UCP_test$Price))
+names(final) <- c("pred_Price","Price")
+p12 <- ggplot(final, aes(x=pred_Price,y=Price)) + 
+  geom_point(alpha=0.4, col ="grey") + 
+  scale_x_continuous(limits=c(0,100)) +
+  scale_y_continuous(limits=c(0,100)) +
+  geom_abline(intercept=0,slope=1) +
+  geom_smooth(se=0,method = "lm") +
+  coord_fixed(1) +
+  ggtitle("SVM")
+p12
+```
+
+```{r}
+SVM_RMSE <- sqrt(sum((final$pred_Price-final$Price)^2)/nrow(final))
+SVM_RMSE
+```
+
+## Random Forest
+
+```{r}
+# From previous step
+tuneGrid <- data.frame(
+  .mtry = c(8:16),
+  .splitrule = "variance",
+  .min.node.size = 5
+)
+
+# Fit random forest: model
+rf_model <- train(
+  Price ~ .,
+  tuneLength = 1,
+  data = UCP_train, 
+  method = "ranger",
+  tuneGrid = tuneGrid,
+  trControl = trainControl(
+    method = "cv", 
+    number = 10, 
+    verboseIter = FALSE
+  )
+)
+
+# Print model to console
+rf_model
+plot(rf_model)
+```
+
+```{r}
+pred_Price <- predict(rf_model, newdata = UCP_test)
+final <- as.data.frame(cbind(pred_Price,UCP_test$Price))
+names(final) <- c("pred_Price","Price")
+p13 <- ggplot(final, aes(x=pred_Price,y=Price)) + 
+  geom_point(alpha=0.4, col ="grey") + 
+  scale_x_continuous(limits=c(0,100)) +
+  scale_y_continuous(limits=c(0,100)) +
+  geom_abline(intercept=0,slope=1) +
+  geom_smooth(se=0,method = "lm") +
+  coord_fixed(1) +
+  ggtitle("RF")
+p13
+```
+
+```{r}
+RF_RMSE <- sqrt(sum((final$pred_Price-final$Price)^2)/nrow(final))
+RF_RMSE
+```
+
+
+## Stochastic Gradient Boosting
+
+```{r, include=FALSE}
+# From previous step
+tuneGrid <- data.frame(
+  .n.trees = 10000,
+  .interaction.depth = c(5,6,7),
+  .shrinkage = 0.01,
+  .n.minobsinnode = 5
+)
+
+# Fit random forest: model
+sgb_model <- train(
+  Price ~ .,
+  tuneLength = 1,
+  data = UCP_train, 
+  method = 'gbm',
+  tuneGrid = tuneGrid,
+  trControl = trainControl(
+    method = "cv", 
+    number = 10, 
+    verboseIter = FALSE
+  )
+)
+
+# Print model to console
+sgb_model
+plot(sgb_model)
+```
+
+```{r}
+pred_Price <- predict(sgb_model, newdata = UCP_test)
+final <- as.data.frame(cbind(pred_Price,UCP_test$Price))
+names(final) <- c("pred_Price","Price")
+p14 <- ggplot(final, aes(x=pred_Price,y=Price)) + 
+  geom_point(alpha=0.4, col ="grey") + 
+  scale_x_continuous(limits=c(0,100)) +
+  scale_y_continuous(limits=c(0,100)) +
+  geom_abline(intercept=0,slope=1) +
+  geom_smooth(se=0,method = "lm") +
+  coord_fixed(1)+
+  ggtitle("SGB")
+p14
+```
+
+```{r}
+SGB_RMSE <- sqrt(sum((final$pred_Price-final$Price)^2)/nrow(final))
+SGB_RMSE
+```
+
+```{r}
+multiplot(p11, p12, p13, p14, cols=4)
+compar_pre <- data.frame(c(LR_RMSE, SVM_RMSE, 3.2211, SGB_RMSE)) %>% transpose()
+names(compar_pre) <-  c("Linear Regression", "Support Vector Machines", "Random Forest","Stochastic Gradient Boosting")
+compar_pre %>% kbt %>% save_kable("compare_pre.png")
+```
+
+# Causal Inferance
+
+```{r,include=FALSE}
+## Orthogonal ML for LTE
+orthoLTE <- function(x, d, y, dreg, yreg, nfold=2)
+{
+  # randomly split data into folds
+  nobs <- nrow(x)
+  foldid <- rep.int(1:nfold,
+        times = ceiling(nobs/nfold))[sample.int(nobs)]
+  I <- split(1:nobs, foldid)
+  # create residualized objects to fill
+    ytil <- dtil <- rep(NA, nobs)
+    # run the OOS orthogonalizations
+    cat("fold: ")
+    for(b in 1:length(I)){
+      dfit <- dreg(x[-I[[b]],], d[-I[[b]]])
+      yfit <- yreg(x[-I[[b]],], y[-I[[b]]])
+      dhat <- predict(dfit, x[I[[b]],], type="response")
+      yhat <- predict(yfit, x[I[[b]],], type="response")
+      dtil[I[[b]]] <- drop(d[I[[b]]] - dhat)
+      ytil[I[[b]]] <- drop(y[I[[b]]] - yhat)
+      cat(b," ")
+      }
+    rfit <- lm(ytil ~ dtil)
+    gam <- coef(rfit)[2]
+    se <- sqrt(vcovHC(rfit)[2,2])
+    cat(sprintf("\ngamma (se) = %g (%g)\n", gam, se))
+  
+    return( list(gam=gam, se=se, dtil=dtil, ytil=ytil) )
+}
+
+```
+
+## **Study weather engine has positive effect on the car price.**
+
+```{r}
+UCP_data <- UsedCarPrice_data %>% filter(!is.na(Price))
+UCP_data <- UCP_data[,-16]
+UCP_data <- UCP_data[,-13]
+
+UCP_data <- na.omit(UCP_data)
+UCP_data$Kilometers_Driven <- log(UCP_data$Kilometers_Driven)
+UCP_data$name <- UCP_data$Name
+UCP_data <- UCP_data[,-2]
+
+UCP_CI <- fastDummies::dummy_cols(UCP_data)
+UCP_CI <- UCP_CI[,-c(1,2,3,5,6,7,13)]
+UCP_CI <- UCP_CI[,-c(7,18,43,46,48,53)]
+UCP_CI <- UCP_CI[,-49] #ambassador classic nova diesel
+dim(UCP_CI)
+```
+
+```{r}
+X <- data.frame(UCP_CI[,-c(6,3)])
+
+Y <- UCP_CI$Price
+D <- UCP_CI$Engine
+
+X.colnames <- colnames(X)
+```
+
+### OLS
+
+```{r}
+
+ols_casual <- summary(lm(formula = Y ~ D + ., data = X))$coef[1:3, ]
+# ols_casual %>% kbt %>% save_kable("ols_casual.png")
+```
+
+D is not significant
+
+### Orthogonal ML
+
+```{r}
+dreg <- function(X,D){ cv.gamlr(X, D, lmr=1e-5) }
+yreg <- function(X,Y){ cv.gamlr(X, Y, lmr=1e-5) }
+resids <- orthoLTE( x=X, d=D, y=Y,
+                    dreg=dreg, yreg=yreg, nfold=5)
+data.frame(resids$gam, resids$se, resids$gam/resids$se) %>% kbt %>% save_kable("otgogonal_ml.png")
+# resids
+# coef(rfit)
+# 0.003753/0.001215
+```
+
+0.0036 significant
+
+### High-dimensional confounder adjustment (without name variable)
+
+```{r}
+t <- as.numeric(UCP_data$Year)
+t2 <- t^2
+s <- UCP_data$Location ## the location are numbered alphabetically
+
+controls <- data.frame(UCP_data[,-c(1,2,3,9,12,14)])
+
+y <- UCP_data$Price
+d <- UCP_data$Engine
+
+# d <- ifelse(d=="Petrol",1,0)
+(glm(y~d+ . , data = controls) %>% summary)$coef
+```
+
+direct estimation: engine is not significant
+
+```{r,warning=FALSE}
+summary(interact <- glm(y ~ d + (s + .^2)*(t+t2), data=controls))
+H_dim <- summary(interact <- glm(y ~ d + (s + .^2)*(t+t2), data=controls))$coef['d',] 
+## fuel_type is still significant.
+options(scipen = 200, round = 3)
+
+H_dim %>% data.frame(check.rows = F, check.names = F, fix.empty.names = F) %>% round(6) %>% kbt %>% save_kable("H_dim_out.png")
+
+dim(model.matrix(y ~ d + (s + .^2)*(t+t2), data=controls))
+```
+
+high dimentional estimation: engine is significant, 0.002785
+
+```{r,warning=FALSE}
+## refactor location to have NA reference level
+s <- factor(s, levels=c(NA,levels(s)), exclude=NULL)
+x = sparse.model.matrix(~ (s + .^2)*(t+t2), data=controls)[,-1]
+dim(x)
+# cbind(d,x)
+```
+
+```{r}
+## naive lasso regression
+naive <- gamlr(cbind(d,x),y)
+# coef(naive)
+# (naive %>% summary) %>% names()
+coef(naive)["d",] # effect is AICc selected <0
+```
+
+naive lasso regression: 0.001780
+
+```{r}
+## now, what if we explicitly include dhat confounding:
+## we follow the Algorithm and fit the treatment effect regression, 
+treat <- gamlr(x,d,lambda.min.ratio=1e-4)
+# we needed to drop lambda.min.ratio because AICc wants a complex model
+# that indicates that fuel type are highly correlated with controls.
+# lambda.min.ratio: The smallest penalty weight (expected L1 cost) as a ratio of the path start value
+
+plot(treat)
+```
+
+```{r}
+# Now, grab the predicted treatment
+# type="response" is redundant here (gaussian), 
+# but you'd want it if d was binary
+dhat <- predict(treat, x, type="response") 
+## not much signal in d not predicted by dhat
+plot(dhat,d,bty="n",pch=21,bg=8) 
+## that means we have little to resemble an experiment here...
+```
+
+```{r}
+## IS R^2?
+cor(drop(dhat),d)^2
+## Note: IS R2 is what governs how much independent signal
+## you have for estimating 
+```
+
+R^2 of x to d: 0.9148
+
+```{r}
+# re-run lasso, with this (2nd column) included unpenalized
+#free: Free variables: indices of the columns of x which will be unpenalized.
+causal <- gamlr(cbind(d,dhat,x),y,free=2,lmr=1e-4)
+coef(causal)["d",] # AICc says abortion has no causal effect.
+```
+
+LTE Lasso regression: 0.002841
+
+
+### Double Selection of Engine
+
+```{r}
+#Use LASSO of Y on X to select H 
+lasso.fit.outcome <- cv.glmnet(data.matrix(X), Y, alpha=1) 
+coef <- predict(lasso.fit.outcome, type = "nonzero") 
+H <- X.colnames[unlist(coef)] 
+# Variables selected by LASSO: 
+#H
+
+#Use LASSO of T on X to select K
+lasso.fit.propensity <- cv.glmnet(data.matrix(X), D, alpha=1) # D <- Engine
+coef <- predict(lasso.fit.propensity, type = "nonzero") 
+K <- X.colnames[unlist(coef)] 
+# Variables selected by LASSO: 
+#K
+
+#Perform RDD of Y on W, Controlling for H union K 
+# Union of selected variables: 
+H_union_K.names <- unique(c(H, K)) 
+#H_union_K.names
+
+XS <- X %>% select(H_union_K.names)
+dim(XS)
+```
+
+1858 -> 1337
+
+```{r}
+DS <- summary(lm(formula = Y ~ D + ., data = XS))
+DS$coef[1:5, ] 
+# %>% kbt() %>% save_kable("DS.png")
+```
+
+0.008045 significant
+
+## **Study weather petrol fuel type car have a higher price compared with others.**
+
+```{r}
+t <- as.numeric(UCP_data$Year)
+t2 <- t^2
+s <- UCP_data$Location ## the location are numbered alphabetically
+
+controls <- data.frame(UCP_data[,-c(1,2,3,5,12,14)])
+
+y <- UCP_data$Price
+d <- UCP_data$Fuel_Type
+
+d <- ifelse(d=="Diesel",1,0)
+```
+
+direct estimation: 3.228 very significant 
+
+```{r,warning=FALSE}
+summary(interact <- glm(y ~ d + (s + .^2)*(t+t2), data=controls))
+summary(interact <- glm(y ~ d + (s + .^2)*(t+t2), data=controls))$coef['d',] 
+## fuel_type is still significant.
+dim(model.matrix(y ~ d + (s + .^2)*(t+t2), data=controls))
+```
+
+high dimentional estimation: 2.195 very significant
+
+```{r,warning=FALSE}
+## refactor location to have NA reference level
+s <- factor(s, levels=c(NA,levels(s)), exclude=NULL)
+x = sparse.model.matrix(~ (s + .^2)*(t+t2), data=controls)[,-1]
+dim(x)
+```
+
+```{r}
+## naive lasso regression
+naive <- gamlr(cbind(d,x),y)
+coef(naive)["d",] # effect is AICc selected <0
+```
+
+naive lasso regression: 1.991
+
+```{r}
+## now, what if we explicitly include dhat confounding:
+## we follow the Algorithm and fit the treatment effect regression, 
+treat <- gamlr(x,d,lambda.min.ratio=1e-4)
+# we needed to drop lambda.min.ratio because AICc wants a complex model
+# that indicates that fuel type are highly correlated with controls.
+# lambda.min.ratio: The smallest penalty weight (expected L1 cost) as a ratio of the path start value
+
+plot(treat)
+```
+
+```{r}
+# Now, grab the predicted treatment
+# type="response" is redundant here (gaussian), 
+# but you'd want it if d was binary
+dhat <- predict(treat, x, type="response") 
+## not much signal in d not predicted by dhat
+plot(dhat,d,bty="n",pch=21,bg=8) 
+## that means we have little to resemble an experiment here...
+```
+
+```{r}
+## IS R^2?
+cor(drop(dhat),d)^2
+## Note: IS R2 is what governs how much independent signal
+## you have for estimating 
+```
+
+R^2 of x to d: 0.66
+
+```{r}
+# re-run lasso, with this (2nd column) included unpenalized
+#free: Free variables: indices of the columns of x which will be unpenalized.
+causal <- gamlr(cbind(d,dhat,x),y,free=2,lmr=1e-4)
+coef(causal)["d",] # AICc says abortion has no causal effect.
+```
+
+LTE Lasso regression: 2.2190
+
+```{r}
+dreg <- function(x,d){ cv.gamlr(x, d, lmr=1e-5) }
+yreg <- function(x,y){ cv.gamlr(x, y, lmr=1e-5) }
+resids <- orthoLTE( x=x, d=d, y=y,
+                    dreg=dreg, yreg=yreg, nfold=5)
+```
+
+Orthogonal ML for LTE: 2.559
+
+
+## Double Selection of Owner_Type
+
+```{r}
+X <- data.frame(UCP_CI[,-c(6,44,45,46,47,48)])
+
+Y <- UCP_CI$Price
+D <- UCP_CI$Owner_Type_First
+
+X.colnames <- colnames(X)
+```
+
+```{r}
+summary(lm(formula = Y ~ D + ., data = X))
+```
+
+
+```{r}
+#Use LASSO of Y on X to select H 
+lasso.fit.outcome <- cv.glmnet(data.matrix(X), Y, alpha=1) 
+coef <- predict(lasso.fit.outcome, type = "nonzero") 
+H <- X.colnames[unlist(coef)] 
+# Variables selected by LASSO: 
+H
+
+#Use LASSO of T on X to select K
+lasso.fit.propensity <- cv.glmnet(data.matrix(X), D, alpha=1) 
+coef <- predict(lasso.fit.propensity, type = "nonzero") 
+K <- X.colnames[unlist(coef)] 
+# Variables selected by LASSO: 
+K
+
+#Perform RDD of Y on W, Controlling for H union K 
+# Union of selected variables: 
+H_union_K.names <- unique(c(H, K)) 
+H_union_K.names
+
+XS <- X %>% select(H_union_K.names)
+dim(XS)
+```
+
+```{r}
+summary(lm(formula = Y ~ D + ., data = XS))
+```
+
+#--------------------------------------------
+#--------------------------------------------
+
+```{r}
+summ_ci <- data.frame(
+  OLS = ols_casual[2,],
+# othogonal 
+  orthogonal_ML = c(0.003753,0.001215, 0.003753/0.001215, 1-pnorm(0.003753/0.001215)),
+# H_d : 
+  H_dim = (glm(y~d+ . , data = controls) %>% summary)$coef[2,],
+#naive_lass :
+  Naive_LASSO = coef(naive)["d",],
+#lte lasso
+  LTE_LASSO = coef(causal)["d",],
+#double selection
+Double_selection = DS$coef[2, ] )
+# names(summ_ci) <- c("Variable", "SE", "t-value", "p-value")
+
+summ_ci %>% kbt %>% save_kable("summ_ci.png")
+```
+
